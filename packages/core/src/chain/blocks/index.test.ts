@@ -1,5 +1,5 @@
 import { describe, expect } from '@jest/globals'
-import { createApi } from '../api'
+import { createApi, disconnect } from '../api'
 import { BlockUtils } from '.'
 import { endpoints } from '../../utils/endpoints'
 
@@ -15,7 +15,7 @@ describe('BlockUtils', () => {
   })
 
   afterAll(async () => {
-    ;(await apiPromise).disconnect()
+    await disconnect(await apiPromise)
   })
   describe('exactBlockAt', () => {
     const testCases = [
