@@ -12,3 +12,27 @@ docker compose run --rm -v $(pwd)/orionData.json:/input/seedData.json mock-orion
 
 # Start all services
 docker compose up -d
+
+# Wait until processor is ready
+timeout=60
+interval=1
+elapsed=0
+echo "Waiting for processor to be ready"
+while true; do
+  if docker compose logs qn_processor 2>&1 | grep -q "Starting the event queue"; then
+    echo "OK"
+    break
+  fi
+
+  if [ $elapsed -ge $timeout ]; then
+    echo "Timeout reached!"
+    exit 1
+  fi
+
+  sleep $interval
+  echo -n "."
+  elapsed=$((elapsed + interval))
+done
+
+# Restart graphql server
+docker compose restart qn_graphql-server

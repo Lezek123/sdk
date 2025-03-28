@@ -16,6 +16,8 @@ import {
   TxStatusError,
 } from './errors'
 import { endpoints } from '../utils/endpoints'
+import { BuyMembershipParams, UpdateProfileParams } from './metaTransactions'
+import _ from 'lodash'
 
 const TEST_NODE_ENDPOINT = endpoints.sdkTesting.wsRpc
 const TEST_QN_ENDPOINT = endpoints.sdkTesting.queryNode
@@ -102,50 +104,46 @@ async function expectError(
   }
 }
 
-jest.setTimeout(30_000)
+jest.setTimeout(60_000)
 
 let aliceMemberId = 0
 
+beforeAll(async () => {
+  const { tx, qnApi } = await tools
+  const aliceAddr = alice
+  // The tests expect ALICE to a have a membership...
+  const existing = await qnApi.query.Membership.first({
+    where: { controllerAccount_eq: aliceAddr },
+  })
+  if (existing) {
+    aliceMemberId = Number(existing.id)
+  } else {
+    // Buy membership for alice
+    const { lastResult } = await tx
+      .run(
+        tx.meta.members.buyMembership({
+          handle: 'alice',
+          controllerAccount: alice,
+          rootAccount: alice,
+          metadata: { name: 'Alice' },
+        }),
+        alice
+      )
+      .finalized()
+    const [memberId] = getEvent(lastResult, 'members', 'MembershipBought').data
+    aliceMemberId = memberId.toNumber()
+  }
+})
+
+afterAll(async () => {
+  const { api } = await tools
+  return new Promise<void>((resolve, reject) => {
+    api.once('disconnected', resolve)
+    api.disconnect().catch(reject)
+  })
+})
+
 describe('TxManager', () => {
-  beforeAll(async () => {
-    const { tx, qnApi } = await tools
-    const aliceAddr = alice
-    // The tests expect ALICE to a have a membership...
-    const existing = await qnApi.query.Membership.first({
-      where: { controllerAccount_eq: aliceAddr },
-    })
-    if (existing) {
-      aliceMemberId = Number(existing.id)
-    } else {
-      // Buy membership for alice
-      const { lastResult } = await tx
-        .run(
-          tx.meta.members.buyMembership({
-            handle: 'alice',
-            controllerAccount: alice,
-            rootAccount: alice,
-            metadata: { name: 'Alice' },
-          }),
-          alice
-        )
-        .finalized()
-      const [memberId] = getEvent(
-        lastResult,
-        'members',
-        'MembershipBought'
-      ).data
-      aliceMemberId = memberId.toNumber()
-    }
-  })
-
-  afterAll(async () => {
-    const { api } = await tools
-    return new Promise<void>((resolve, reject) => {
-      api.once('disconnected', resolve)
-      api.disconnect().catch(reject)
-    })
-  })
-
   describe('errors', () => {
     test.concurrent('InsufficientBalance (fees)', async () => {
       const { api, tx, keys } = await tools
@@ -305,6 +303,7 @@ describe('TxManager', () => {
       })
     })
   })
+
   describe('batch', () => {
     // batch: ContinueOnFailure
     test.concurrent('ContinueOnFailure', async () => {
@@ -431,6 +430,54 @@ describe('TxManager', () => {
       })
     })
   })
+
+  describe('meta transactions', () => {
+    test.concurrent('buy membership', async () => {
+      const { tx, qnApi } = await tools
+      const params = {
+        rootAccount: alice,
+        controllerAccount: alice,
+        handle: uuid(),
+        metadata: {
+          name: 'Alice',
+          about: 'About Alcie',
+        },
+      } satisfies BuyMembershipParams
+      const { lastResult } = await tx
+        .run(tx.meta.members.buyMembership(params), alice)
+        .processedBy(qnApi)
+      const [memberId] = getEvent(
+        lastResult,
+        'members',
+        'MembershipBought'
+      ).data
+      const member = await qnApi.query.Membership.byId(memberId.toString(), {
+        ..._.mapValues(params, () => true),
+        metadata: _.mapValues(params.metadata, () => true),
+      })
+      expect(member).toEqual(params)
+    })
+
+    test.concurrent('update profile', async () => {
+      const { tx, qnApi } = await tools
+      const params = {
+        memberId: aliceMemberId,
+        metadata: {
+          name: 'Alice',
+          about: 'About Alice',
+        },
+      } satisfies UpdateProfileParams
+      await tx
+        .run(tx.meta.members.updateProfile(params), alice)
+        .processedBy(qnApi)
+      const updatedMeta = await qnApi.query.MemberMetadata.first({
+        where: { member: { id_eq: aliceMemberId.toString() } },
+        select: _.mapValues(params.metadata, () => true),
+      })
+      expect(updatedMeta).toEqual(params.metadata)
+    })
+  })
+
   // nonce
   test.concurrent('nonce', async () => {
     const { api, tx } = await tools
