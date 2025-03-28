@@ -14,8 +14,8 @@ docker compose run --rm -v $(pwd)/orionData.json:/input/seedData.json mock-orion
 docker compose up -d
 
 # Wait until processor is ready
-timeout=60
-interval=1
+timeout=120
+interval=5
 elapsed=0
 echo "Waiting for processor to be ready"
 while true; do

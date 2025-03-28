@@ -22,8 +22,8 @@ export class QueryNodeApi
   async disconnect(): Promise<void> {
     return new Promise((resolve) => {
       this.wsClient.unsubscribeAll()
-      this.wsClient.onDisconnected(resolve)
-      this.wsClient.close()
+      this.wsClient.on('close', resolve)
+      this.wsClient.close(true, true)
     })
   }
 
