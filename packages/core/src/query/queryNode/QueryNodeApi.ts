@@ -22,8 +22,21 @@ export class QueryNodeApi
   async disconnect(): Promise<void> {
     return new Promise((resolve) => {
       this.wsClient.unsubscribeAll()
-      this.wsClient.on('close', resolve)
-      this.wsClient.close(true, true)
+      const status = (this.wsClient.client as WebSocket).readyState
+      if (status === WebSocket.CLOSED) {
+        return resolve()
+      }
+      this.wsClient.onDisconnected(resolve)
+      if (status === WebSocket.CONNECTING) {
+        // Disconnect once connected
+        this.wsClient.onConnected(() => {
+          this.wsClient.close(true, true)
+        })
+      }
+      if (status === WebSocket.OPEN) {
+        // Disconnect immediately
+        this.wsClient.close(true, true)
+      }
     })
   }
 
