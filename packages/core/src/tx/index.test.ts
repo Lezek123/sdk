@@ -18,6 +18,7 @@ import {
 import { endpoints } from '../utils/endpoints'
 import { BuyMembershipParams, UpdateProfileParams } from './metaTransactions'
 import _ from 'lodash'
+import { disconnect } from '../chain/api'
 
 const TEST_NODE_ENDPOINT = endpoints.sdkTesting.wsRpc
 const TEST_QN_ENDPOINT = endpoints.sdkTesting.queryNode
@@ -136,11 +137,9 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  const { api } = await tools
-  return new Promise<void>((resolve, reject) => {
-    api.once('disconnected', resolve)
-    api.disconnect().catch(reject)
-  })
+  const { api, qnApi } = await tools
+  await disconnect(api)
+  await qnApi.disconnect()
 })
 
 describe('TxManager', () => {

@@ -27,6 +27,14 @@ export async function untilSynced(api: ApiPromise): Promise<void> {
   )
 }
 
+// Disconnect and wait until the api actually disconnects
+export async function disconnect(api: ApiPromise): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    api.once('disconnected', resolve)
+    api.disconnect().catch(reject)
+  })
+}
+
 export async function sortedEntries<
   IDType extends Codec,
   ValueType extends Codec,

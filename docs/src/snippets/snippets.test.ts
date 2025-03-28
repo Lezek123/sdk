@@ -1,5 +1,5 @@
 import { describe } from '@jest/globals'
-import { runSnippet, SnippetFunc } from './snippet'
+import { SnippetFunc, snippetScope } from './snippet'
 import qnSnippets from './query/queryNode'
 import orionSnippets from './query/orion'
 
@@ -18,7 +18,10 @@ function testSnippets(source: Snippets) {
       it.concurrent(
         name,
         async () => {
-          await runSnippet(value)
+          await value({
+            ...snippetScope,
+            log: () => null, // Don't log anything to keep the output clean
+          })
         },
         60_000
       )
@@ -29,6 +32,11 @@ function testSnippets(source: Snippets) {
     }
   }
 }
+
+afterAll(async () => {
+  await snippetScope.qnApi.disconnect()
+  await snippetScope.orionApi.disconnect()
+})
 
 describe('Snippets', () => {
   testSnippets(snippets)
