@@ -22,7 +22,11 @@ export class QueryNodeApi
   async disconnect(): Promise<void> {
     return new Promise((resolve) => {
       this.wsClient.unsubscribeAll()
-      const status = (this.wsClient.client as WebSocket).readyState
+      const websocket = this.wsClient.client as WebSocket | undefined
+      if (!websocket) {
+        return resolve()
+      }
+      const status = websocket.readyState
       if (status === WebSocket.CLOSED) {
         return resolve()
       }
@@ -45,6 +49,7 @@ export class QueryNodeApi
       this.url.replace(/^http/, 'ws'),
       {
         reconnect: true,
+        lazy: true,
       },
       WebSocket
     )
