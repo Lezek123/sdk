@@ -19,6 +19,14 @@ export class QueryNodeApi
     this.wsClient = this.createWsClient()
   }
 
+  async disconnect(): Promise<void> {
+    return new Promise((resolve) => {
+      this.wsClient.unsubscribeAll()
+      this.wsClient.onDisconnected(resolve)
+      this.wsClient.close()
+    })
+  }
+
   createWsClient() {
     return new SubscriptionClient(
       this.url.replace(/^http/, 'ws'),

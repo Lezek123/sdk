@@ -22,6 +22,10 @@ export class OrionApi
     })
   }
 
+  async disconnect() {
+    await this.wsClient.dispose()
+  }
+
   async hasProcessed(blockNumber: number): Promise<void> {
     const subscriptionQ = {
       processorState: {
