@@ -45,19 +45,19 @@ This is possible thanks to [GenQL](https://genql.dev/docs) which generates a Typ
   <TabItem value="query-node" label="Query node" default>
   ```typescript
   import { QueryNodeApi } from "@joystream/sdk-core/query/queryNode";
-  const qnApi = new QueryNodeApi("https://query.joystream.org/graphql");
+  const qnApi = new QueryNodeApi("https://mainnet.joystream.dev/query/graphql");
   ```
   </TabItem>
   <TabItem value="orion" label="Orion" default>
   ```typescript
   import { OrionApi } from "@joystream/sdk-core/query/orion";
-  const orionApi = new OrionApi("https://orion.gleev.xyz/graphql");
+  const orionApi = new OrionApi("https://mainnet.joystream.dev/orion/graphql");
   ```
   </TabItem>
   <TabItem value="storage-squid" label="Storage squid" default>
   ```typescript
   import { StorageSquidApi } from '@joystream/sdk-core/query/storageSquid';
-  const storageSquidApi = new StorageSquidApi("http://localhost:4352/graphql");
+  const storageSquidApi = new StorageSquidApi("https://mainnet.joystream.dev/storage/squid/graphql");
   ```
   </TabItem>
 </Tabs>
