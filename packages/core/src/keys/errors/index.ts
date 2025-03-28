@@ -2,7 +2,7 @@ export class KeyManagerError extends Error {}
 
 export class KeyNotFound extends KeyManagerError {
   constructor(key: string) {
-    super(`Key ${key} does not exist in KeyManager`)
+    super(`Key "${key}" does not exist in KeyManager`)
   }
 }
 

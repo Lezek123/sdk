@@ -21,7 +21,7 @@ jobs:
       - name: Run build
         run: yarn build
       - name: Setup testing environment
-        run: yarn test:setup
+        run: yarn test:setup:up
       - name: Run tests
         run: yarn test:sdk
   test-snippets:

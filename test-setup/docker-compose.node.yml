@@ -1,0 +1,17 @@
+services:
+  joystream-node:
+    image: joystream/node:latest
+    restart: unless-stopped
+    container_name: joystream-node
+    volumes:
+      - chain-data:/data
+    command:
+      '--chain dev --alice --validator --pruning=archive --unsafe-ws-external --unsafe-rpc-external
+      --rpc-methods Safe --rpc-cors=all --log runtime --base-path /data --no-hardware-benchmarks'
+    ports:
+      - 127.0.0.1:9944:9944
+      - 127.0.0.1:9933:9933
+
+volumes:
+  chain-data:
+    driver: local
