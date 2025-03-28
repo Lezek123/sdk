@@ -1,10 +1,10 @@
 import { OrionApi } from '@joystream/sdk-core/query/orion'
 import { QueryNodeApi } from '@joystream/sdk-core/query/queryNode'
+import { endpoints } from '@joystream/sdk-core/utils/endpoints'
 
-// TODO: Replace with joystream.dev endpoints
 export const snippetScope = {
-  qnApi: new QueryNodeApi(`https://query.joystream.org/graphql`),
-  orionApi: new OrionApi(`https://orion.gleev.xyz/graphql`),
+  qnApi: new QueryNodeApi(endpoints.joystreamDev.queryNode),
+  orionApi: new OrionApi(endpoints.joystreamDev.orion),
 } as const
 
 export type SnippetParams = {
