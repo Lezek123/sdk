@@ -29,7 +29,7 @@ export class QueryNodeApi
       this.wsClient.onDisconnected(resolve)
       if (status === WebSocket.CONNECTING) {
         // Disconnect once connected
-        this.wsClient.onConnected(() => {
+        ;(this.wsClient.client as WebSocket).on('open', () => {
           this.wsClient.close(true, true)
         })
       }
