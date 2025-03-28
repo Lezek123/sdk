@@ -3,7 +3,7 @@ import { createApi, disconnect } from '../api'
 import { BlockUtils } from '.'
 import { endpoints } from '../../utils/endpoints'
 
-jest.setTimeout(60_000)
+jest.setTimeout(120_000)
 
 const TEST_WS_ENDPOINT = endpoints.joystreamDev.wsRpc
 

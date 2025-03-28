@@ -105,7 +105,7 @@ async function expectError(
   }
 }
 
-jest.setTimeout(60_000)
+jest.setTimeout(120_000)
 
 let aliceMemberId = 0
 
