@@ -5,6 +5,7 @@ const envs = (process.env.TEST_ENV || 'node').split(',')
 
 const jestConfig: JestConfigWithTsJest = {
   maxWorkers: 1,
+  maxConcurrency: 8,
   detectOpenHandles: true,
   projects: [
     ...packages
