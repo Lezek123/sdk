@@ -2676,7 +2676,7 @@ __metadata:
 
 "@joystream/sdk-core@file:../packages/core/package.tgz::locator=%40joystream%2Fsdk-docs%40workspace%3A.":
   version: 1.0.0
-  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=526248&locator=%40joystream%2Fsdk-docs%40workspace%3A."
+  resolution: "@joystream/sdk-core@file:../packages/core/package.tgz#../packages/core/package.tgz::hash=118dde&locator=%40joystream%2Fsdk-docs%40workspace%3A."
   dependencies:
     "@joystream/metadata-protobuf": "npm:^2.16.0"
     "@joystream/types": "npm:^4.6.1"
@@ -2692,7 +2692,7 @@ __metadata:
     queue: "npm:^6.0.0"
     subscriptions-transport-ws: "npm:^0.11.0"
     uuid: "npm:^11.1.0"
-  checksum: 10c0/ecdc6a1cd4f494fb4bfd23d843c39e4b884d67500c396d024931accf384051f2162b5de59eed1fa51b665715acffbd84822e68c30156ff8f38c6ef02a7b33888
+  checksum: 10c0/74166eb38a7d1d9a123e26430314fd96f2aaf55e0c42a50db40d504867f8fee5e60a2c2e2f63094ddf24ead86b7fba6449087653d63f551dc013066534026c69
   languageName: node
   linkType: hard
 
