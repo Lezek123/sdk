@@ -15,12 +15,12 @@ type Snippets = Record<string, SnippetFunc | Record<string, unknown>>
 function testSnippets(source: Snippets) {
   for (const [name, value] of Object.entries(source)) {
     if (typeof value === 'function') {
-      it(
+      it.concurrent(
         name,
         async () => {
           await runSnippet(value)
         },
-        30_000
+        60_000
       )
     } else {
       describe(name, () => {

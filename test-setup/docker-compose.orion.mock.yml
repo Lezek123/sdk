@@ -1,0 +1,37 @@
+services:
+  mock-orion_db:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${MOCK_ORION_DB_PASS}
+      POSTGRES_DB: ${MOCK_ORION_DB_NAME}
+    ports:
+      - '127.0.0.1:${MOCK_ORION_DB_PORT}:${MOCK_ORION_DB_PORT}'
+    command: ['postgres', '-p', '${MOCK_ORION_DB_PORT}']
+    volumes:
+      - mock-orion_data:/var/lib/postgresql/data
+
+  mock-orion_graphql-api:
+    image: joystream/orion:4.4.1
+    restart: unless-stopped
+    depends_on:
+      - mock-orion_db
+    environment:
+      - DB_HOST=mock-orion_db
+      - DB_NAME=${MOCK_ORION_DB_NAME}
+      - DB_PORT=${MOCK_ORION_DB_PORT}
+      - DB_PASS=${MOCK_ORION_DB_PASS}
+      - DB_ADMIN_USER=${MOCK_ORION_DB_ADMIN_USER}
+      - DB_ADMIN_PASS=${MOCK_ORION_DB_ADMIN_PASS}
+      - GQL_PORT=${MOCK_ORION_GQL_API_PORT}
+      - SUPPORT_NO_CATEGORY_VIDEOS=true
+      - CRT_MARKET_CAP_MIN_VOLUME_JOY=0
+      - ORION_ENV=development
+      - DEV_DISABLE_SAME_SITE=true
+    command: ['npm', 'run', 'graphql-server-start']
+    ports:
+      - '127.0.0.1:${MOCK_ORION_GQL_API_PORT}:${MOCK_ORION_GQL_API_PORT}'
+
+volumes:
+  mock-orion_data:
+    driver: local

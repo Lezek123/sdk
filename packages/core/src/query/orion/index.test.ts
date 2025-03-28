@@ -2,8 +2,9 @@ import _ from 'lodash'
 import { describe, expect, test } from '@jest/globals'
 import { AnyEntity, OrionApi, VISIBLE_ENTITIES } from '.'
 import { EntityNotFoundError } from '../errors'
+import { endpoints } from '../../utils/endpoints'
 
-const TEST_ORION_ENDPOINT: string = 'http://localhost:50002/graphql'
+const TEST_ORION_ENDPOINT = endpoints.sdkTesting.orionMock
 
 type IsAny<T> = 0 extends 1 & T ? true : false
 type TypesMatch<A, B> = false extends IsAny<A> & IsAny<B>

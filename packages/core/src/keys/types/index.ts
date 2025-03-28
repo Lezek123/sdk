@@ -46,3 +46,8 @@ export type SuriKey = KeyringKey & {
 export type AnyKeyringKey = MnemonicKey | SeedKey | SuriKey
 
 export type KeySubscriptionCb = (keys: Key[]) => void
+
+export type SigningKey = {
+  keyPair: KeyringPair
+  provider?: { name: string; signer: Signer }
+}

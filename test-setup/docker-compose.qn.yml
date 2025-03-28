@@ -1,0 +1,135 @@
+services:
+  qn_db:
+    image: postgres:14
+    hostname: qn_db
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${QN_DB_PORT}:${QN_DB_PORT}'
+    volumes:
+      - qn_db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${QN_DB_USER}
+      - POSTGRES_PASSWORD=${QN_DB_PASS}
+      - PGPORT=${QN_DB_PORT}
+    command: ['postgres', '-p', '${QN_DB_PORT}']
+
+  qn_graphql-server:
+    image: joystream/query-node:2.4.2
+    hostname: qn_graphql-server
+    restart: unless-stopped
+    environment:
+      - DB_HOST=qn_db
+      - DB_PASS=${QN_DB_PASS}
+      - DB_USER=${QN_DB_USER}
+      - DB_PORT=${QN_DB_PORT}
+      - DB_NAME=${QN_PROCESSOR_DB_NAME}
+      - GRAPHQL_SERVER_PORT=${QN_GQL_PORT}
+      - GRAPHQL_SERVER_HOST=localhost
+      - TYPEORM_LOGGING=error
+      - PROCESSOR_HOST=qn_processor
+      - PROCESSOR_STATE_APP_PORT=${QN_PROCESSOR_STATE_APP_PORT}
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - '127.0.0.1:${QN_GQL_PORT}:${QN_GQL_PORT}'
+      - '127.0.0.1:${QN_PROCESSOR_STATE_APP_PORT}:${QN_PROCESSOR_STATE_APP_PORT}'
+    depends_on:
+      - qn_db
+    working_dir: /joystream
+    entrypoint: bash
+    command: >
+      -c "yarn workspace query-node-root query-node:start:prod"
+
+  qn_processor:
+    image: joystream/query-node:2.4.2
+    hostname: qn_processor
+    restart: unless-stopped
+    environment:
+      - WARTHOG_DB_HOST=qn_db
+      - WARTHOG_DB_DATABASE=${QN_PROCESSOR_DB_NAME}
+      - WARTHOG_DB_USERNAME=${QN_DB_USER}
+      - WARTHOG_DB_PASSWORD=${QN_DB_PASS}
+      - WARTHOG_DB_PORT=${QN_DB_PORT}
+      - WARTHOG_APP_PORT=4002
+      - DB_HOST=qn_db
+      - DB_PASS=${QN_DB_PASS}
+      - DB_USER=${QN_DB_USER}
+      - DB_PORT=${QN_DB_PORT}
+      - DB_NAME=${QN_PROCESSOR_DB_NAME}
+      - INDEXER_ENDPOINT_URL=${QN_PROCESSOR_INDEXER_GATEWAY}
+      - TYPEORM_HOST=qn_db
+      - TYPEORM_PORT=${QN_DB_PORT}
+      - TYPEORM_DATABASE=${QN_PROCESSOR_DB_NAME}
+      - BATCH_SIZE=100
+      - QUEUE_FACTOR=1
+      - QUEUE_MAX_CAP_FACTOR=4
+      - DEBUG=hydra-processor:event-queue
+      - TYPEORM_LOGGING=error
+      - STATE_UPDATE_ENDPOINT=http://qn_graphql-server:${QN_PROCESSOR_STATE_APP_PORT}/update-processor-state
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - qn_db
+    working_dir: /joystream
+    entrypoint: sh
+    command: >
+      -c "
+        # We always run db setup script. If already exists or migrated no harm is done
+        yarn workspace query-node-root db:prepare ;
+        yarn workspace query-node-root db:migrate ;
+        # We always reach here even if previous db prepare/migrate steps fail.
+        yarn workspace query-node-root processor:start
+      "
+
+  qn_indexer:
+    image: joystream/hydra-indexer:v5.0.0-alpha.8
+    restart: unless-stopped
+    environment:
+      - DB_HOST=qn_db
+      - DB_NAME=${QN_INDEXER_DB_NAME}
+      - DB_PASS=${QN_DB_PASS}
+      - DB_USER=${QN_DB_USER}
+      - DB_PORT=${QN_DB_PORT}
+      - WORKERS_NUMBER=8
+      - REDIS_URI=redis://redis:6379/0
+      - WS_PROVIDER_ENDPOINT_URI=${JOYSTREAM_NODE_WS}
+      - DEBUG=hydra-indexer:substrate-service
+      # Block height to start indexing from.
+      # Note, that if there are already some indexed events, this setting is ignored
+      - BLOCK_HEIGHT=0
+      - TYPEORM_LOGGING=error
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - qn_db
+      - redis
+    command: >
+      sh -c "yarn db:bootstrap && yarn start:prod"
+
+  qn_indexer-gateway:
+    image: joystream/hydra-indexer-gateway:5.0.0-alpha.8
+    hostname: qn_indexer-gateway
+    restart: unless-stopped
+    environment:
+      - WARTHOG_STARTER_DB_HOST=qn_db
+      - WARTHOG_STARTER_DB_DATABASE=${QN_INDEXER_DB_NAME}
+      - WARTHOG_STARTER_DB_PASSWORD=${QN_DB_PASS}
+      - WARTHOG_STARTER_DB_PORT=${QN_DB_PORT}
+      - WARTHOG_STARTER_DB_USERNAME=${QN_DB_USER}
+      - WARTHOG_STARTER_REDIS_URI=redis://redis:6379/0
+      - WARTHOG_APP_PORT=${QN_INDEXER_GATEWAY_PORT}
+      - PORT=${QN_INDEXER_GATEWAY_PORT}
+      # - DEBUG=*
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - '127.0.0.1:${QN_INDEXER_GATEWAY_PORT}:${QN_INDEXER_GATEWAY_PORT}'
+    depends_on:
+      - qn_db
+      - redis
+
+  redis:
+    image: redis:6.0-alpine
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6379:6379'
+
+volumes:
+  qn_db-data:
+    driver: local
