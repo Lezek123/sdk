@@ -4,13 +4,13 @@ import {
   generateSubscriptionOp,
   SubscriptionResult,
 } from './__generated__/genql'
-import { BlockProcessorApi, MetaTxStatus } from '../interfaces'
+import { MetadataProcessorApi, MetaTxStatus } from '../interfaces'
 import { UnexpectedEmptyResult } from '../errors'
 import { WebSocket } from 'ws'
 
 export class OrionApi
   extends QueryApi<PaginationType.Connection>
-  implements BlockProcessorApi
+  implements MetadataProcessorApi
 {
   wsClient: WsClient
 
