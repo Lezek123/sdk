@@ -18,7 +18,11 @@ import {
 import { BlockUtils } from '../chain/blocks'
 import { Debugger } from 'debug'
 import { txDebug } from './debug'
-import { BlockProcessorApi, MetaTxStatus } from '../query/interfaces'
+import {
+  BlockProcessorApi,
+  MetadataProcessorApi,
+  MetaTxStatus,
+} from '../query/interfaces'
 import EventEmitter from 'node:events'
 import { KeyManager } from '../keys'
 import { errorMsg, toError } from '../utils'
@@ -231,7 +235,7 @@ export class TraceableTx<
     return this
   }
 
-  public async metaProcessedBy(api: BlockProcessorApi): Promise<this> {
+  public async metaProcessedBy(api: MetadataProcessorApi): Promise<this> {
     await this.processedBy(api)
     const status = await api.metaTxStatus(this.tx.hash.toHex())
     if (!status) {

@@ -1,5 +1,5 @@
 import { UnexpectedEmptyResult } from '../errors'
-import { BlockProcessorApi, MetaTxStatus } from '../interfaces'
+import { MetadataProcessorApi, MetaTxStatus } from '../interfaces'
 import {
   generateSubscriptionOp,
   SubscriptionResult,
@@ -11,7 +11,7 @@ import { toError } from '../../utils'
 
 export class QueryNodeApi
   extends QueryApi<PaginationType.Offset>
-  implements BlockProcessorApi
+  implements MetadataProcessorApi
 {
   protected wsClient: SubscriptionClient
   constructor(url: string, config?: Partial<Config>) {
