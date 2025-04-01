@@ -2,11 +2,13 @@ import { describe } from '@jest/globals'
 import { SnippetFunc, snippetScope } from './snippet'
 import qnSnippets from './query/queryNode'
 import orionSnippets from './query/orion'
+import storageSquidSnippets from './query/storageSquid'
 
 const snippets = {
   query: {
     queryNode: qnSnippets,
     orion: orionSnippets,
+    storageSquid: storageSquidSnippets,
   },
 }
 
