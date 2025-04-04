@@ -72,8 +72,14 @@ export function processBatchCalls(
 }
 
 export enum BatchStrategy {
+  // Execute calls one-by-one and interrupt in case one of them fails.
+  // In case an interruption occurs, all subsequent calls will be skipped,
+  // but the state will remain affected by all of the previous calls.
   InterruptOnFailure = 'batch',
-  RollbackOnFailue = 'batchAll',
+  // Execute calls one-by-one, but fail and rollback the entire batch extrinsic
+  // in case one of the calls fail. It's an all-or-nothing scenario.
+  RollbackOnFailure = 'batchAll',
+  // Execute calls one-by-one and continue until the end even if some of them fail.
   ContinueOnFailure = 'forceBatch',
 }
 
@@ -114,7 +120,7 @@ export class TxManager {
     }
   ): TraceableTx<BatchTxResult> {
     const batchTx =
-      this.api.tx.utility[options?.strategy || BatchStrategy.RollbackOnFailue](
+      this.api.tx.utility[options?.strategy || BatchStrategy.RollbackOnFailure](
         calls
       )
     return this.run<BatchTxResult>(batchTx, sender, {

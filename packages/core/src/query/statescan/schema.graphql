@@ -1,0 +1,832 @@
+# Indicates exactly one field must be supplied and this field must not be `null`.
+directive @oneOf on INPUT_OBJECT
+
+type Indexer {
+  chain: String
+  blockHeight: Int!
+  blockHash: String!
+  blockTime: Float!
+  extrinsicIndex: Int
+  eventIndex: Int
+}
+
+scalar JSON
+
+scalar JSONObject
+
+type Block {
+  digest: JSONObject
+  events: [Event]
+  eventsCount: Int
+  extrinsics: [Extrinsic]
+  extrinsicsCount: Int
+  extrinsicsRoot: String
+  hash: String!
+  height: Int!
+  parentHash: String
+  stateRoot: String
+  time: Float!
+  validator: String
+}
+
+type Extrinsic {
+  call: Call
+  hash: String!
+  indexer: ExtrinsicIndexer
+  isSigned: Boolean
+  isSuccess: Boolean
+  version: Int
+  calls: [InnerCall]
+  callsCount: Int
+  events: [Event]
+  eventsCount: Int
+  lifetime: [Int]
+  nonce: Int
+  signature: String
+  signer: String
+  tip: String
+}
+
+type ExtrinsicIndexer {
+  blockHeight: Int!
+  blockHash: String!
+  blockTime: Float!
+  extrinsicIndex: Int
+}
+
+type Event {
+  args: [JSONObject]
+  docs: [String]
+  indexer: EventIndexer
+  isExtrinsic: Boolean
+  isExtrinsicResult: Boolean
+  method: String
+  section: String
+}
+
+type EventIndexer {
+  blockHeight: Int!
+  blockHash: String!
+  blockTime: Float!
+  eventIndex: Int
+  extrinsicIndex: Int
+}
+
+type Call {
+  args: [JSONObject]
+  callIndex: String
+  method: String
+  section: String
+}
+
+type InnerCall {
+  args: [JSONObject]
+  callIndex: String
+  method: String
+  section: String
+  eventAttributes: JSONObject
+  indexer: CallIndexer
+}
+
+type CallIndexer {
+  blockHeight: Int!
+  blockHash: String!
+  blockTime: Float!
+  extrinsicIndex: Int
+  callIndex: Int
+}
+
+type Account {
+  data: AccountData
+  detail: AccountDetail
+}
+
+type AccountDetail {
+  nonce: Int
+  consumers: Int
+  providers: Int
+  data: AccountDetailData
+}
+
+type AccountDetailData {
+  free: String
+  reserved: String
+  miscFrozen: String
+  feeFrozen: String
+}
+
+type AccountData {
+  free: String
+  reserved: String
+  feeFrozen: String
+  miscFrozen: String
+  total: String
+  transferrable: String
+  lockedBalance: String
+  lockedBreakdown: [LockedBreakdown]
+  reservedBreakdown: [ReservedBreakdown]
+}
+
+type LockedBreakdown {
+  reasons: String
+  amount: String
+  id: String
+}
+
+type ReservedBreakdown {
+  amount: String
+  id: String
+}
+
+# Custom scalar type for block height or hash
+scalar BlockHeightOrHash
+
+type Query {
+  chainBlock(blockHeightOrHash: BlockHeightOrHash!): Block
+  chainExtrinsic(blockHeight: Int!, extrinsicIndex: Int!): Extrinsic
+  chainEvent(blockHeight: Int!, eventIndex: Int!): Event
+  chainAccount(address: String!): Account
+  vestings(offset: Int!, limit: Int!, address: String): PagedVestings!
+  vestingScanHeight: Int
+  recoverables(
+    lostAccount: String
+    active: Boolean
+    offset: Int!
+    limit: Int!
+  ): PagedRecoverable!
+  recoverable(height: Int!, lostAccount: String!): Recoverable
+  recoverableTimeline(
+    recoverableHeight: Int!
+    lostAccount: String!
+    offset: Int!
+    limit: Int!
+  ): PagedRecoverableTimeline!
+  recoverableRecoveries(
+    recoverableHeight: Int!
+    lostAccount: String!
+    offset: Int!
+    limit: Int!
+  ): PagedRecovery!
+  recoverableCalls(
+    recoverableHeight: Int!
+    lostAccount: String!
+    offset: Int!
+    limit: Int!
+  ): PagedRecoveredCall!
+  recoveries(
+    lostAccount: String
+    active: Boolean
+    offset: Int!
+    limit: Int!
+  ): PagedRecovery!
+  recovery(
+    lostAccount: String!
+    rescuerAccount: String!
+    created: Int!
+  ): Recovery
+  recoveryCalls(
+    lostAccount: String!
+    rescuerAccount: String!
+    recoveryCreatedAt: Int!
+    offset: Int!
+    limit: Int!
+  ): PagedRecoveredCall!
+  recoveryTimeline(
+    lostAccount: String!
+    rescuerAccount: String!
+    created: Int!
+    offset: Int!
+    limit: Int!
+  ): PagedRecoveryTimeline!
+  recoveryProxies(offset: Int!, limit: Int!): PagedRecoveryProxy!
+  recoveryStatistics: RecoveryStatistics!
+  recoveryScanHeight: Int
+  assets(
+    offset: Int!
+    limit: Int!
+    sort: AssetSort
+    destroyed: Boolean
+  ): PagedAsset!
+  asset(id: Int!, height: Int): Asset
+  assetTransfers(
+    offset: Int!
+    limit: Int!
+    assetId: Int
+    assetHeight: Int
+    from: String
+    to: String
+    address: String
+  ): PagedTransfer!
+  assetHolders(
+    offset: Int!
+    limit: Int!
+    assetId: Int!
+    assetHeight: Int
+  ): PagedHolder!
+  accountAssets(offset: Int!, limit: Int!, address: String!): PagedHolder!
+  assetTimeline(
+    offset: Int!
+    limit: Int!
+    assetId: Int!
+    assetHeight: Int
+  ): PagedTimeline!
+  assetStatistic(assetId: Int!, assetHeight: Int): Statistics!
+  assetHistoryStatistics(
+    assetId: Int!
+    assetHeight: Int
+    from: Int
+    to: Int
+  ): [StatisticsWithIndexer]!
+  assetsPalletScanHeight: Int
+  multisigAddress(account: String!): MultisigAddress
+  multisigAddresses(
+    offset: Int!
+    limit: Int!
+    signatory: String
+    sort: MultisigAddressSort
+  ): PagedMultisigAddresses!
+  multisig(
+    account: String!
+    callHash: String!
+    whenHeight: Int!
+    whenExtrinsicIndex: Int!
+  ): Multisig
+  multisigs(
+    offset: Int!
+    limit: Int!
+    account: String
+    signatory: String
+    multisigState: MultisigState
+  ): PagedMultisigs!
+  multisigTimeline(
+    account: String!
+    callHash: String!
+    whenHeight: Int!
+    whenExtrinsicIndex: Int!
+  ): [MultisigTimelineItem]
+  multisigScanHeight: Int
+  identity(account: String!): Identity
+  identities(
+    offset: Int!
+    limit: Int!
+    search: String
+    identityType: IdentitySubType
+    verificationStatus: VerificationStatus
+  ): PagedIdentities!
+  identityTimeline(account: String!): [TimelineItem]!
+  identityRegistrars: [Registrar]!
+  identityRegistrarTimeline(account: String!): [TimelineItem]!
+  identityRequests(
+    offset: Int!
+    limit: Int!
+    search: String
+    registrarIndex: Int
+    sort: RequestSort
+    status: RequestStatusValue
+  ): PagedRequests!
+  identityScanHeight: Int
+  identityStatistics: AllStatistics!
+  proxies(
+    delegator: String
+    delegatee: String
+    isPure: Boolean
+    isActive: Boolean
+    offset: Int!
+    limit: Int!
+  ): PagedProxy!
+  proxy(proxyId: String!): Proxy
+  proxyTimeline(proxyId: String!): [ProxyTimeline]!
+  proxyCalls(proxyId: String!, offset: Int!, limit: Int!): PagedProxyCall!
+  proxyAnnouncements(
+    delegator: String
+    delegatee: String
+    isFinal: Boolean
+    offset: Int!
+    limit: Int!
+  ): PagedAnnouncement!
+  proxyAnnouncement(announcementId: String!): Announcement
+  proxyAnnouncementTimeline(announcementId: String!): [AnnouncementTimeline]!
+  proxyScanHeight: Int
+}
+
+type Vesting {
+  address: String!
+  locked: String!
+  perBlock: String!
+  startingBlock: Int!
+}
+
+type PagedVestings {
+  vestings: [Vesting]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Recoverable {
+  height: Int!
+  who: String!
+  isActive: Boolean!
+  delayPeriod: Int!
+  deposit: String!
+  friends: [String]!
+  threshold: Int!
+  rescuer: String
+  removedAt: Indexer
+}
+
+type PagedRecoverable {
+  items: [Recoverable]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type RecoverableTimeline {
+  recoverableHeight: Int!
+  who: String!
+  name: String!
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedRecoverableTimeline {
+  items: [RecoverableTimeline]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Recovery {
+  lostAccount: String!
+  rescuerAccount: String!
+  isClosed: Boolean!
+  closedAt: Indexer
+  created: Int!
+  deposit: String!
+  friends: [String]!
+  allFriends: [String]!
+  threshold: Int!
+}
+
+type PagedRecovery {
+  items: [Recovery]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type RecoveryTimeline {
+  lostAccount: String!
+  rescuerAccount: String!
+  created: Int!
+  name: String
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedRecoveryTimeline {
+  items: [RecoveryTimeline]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type RecoveredCall {
+  recoverableHeight: Int
+  lostAccount: String!
+  rescuer: String
+  call: JSONObject
+  callHex: String
+  indexer: Indexer!
+}
+
+type PagedRecoveredCall {
+  items: [RecoveredCall]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type RecoveryProxy {
+  rescuer: String!
+  lost: String!
+}
+
+type PagedRecoveryProxy {
+  items: [RecoveryProxy]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type RecoverableStatisticsItem {
+  active: Int!
+  inactive: Int!
+}
+
+type RecoveryStatisticsItem {
+  unClosed: Int!
+  closed: Int!
+}
+
+type RecoveryStatistics {
+  proxies: Int!
+  recoverable: RecoverableStatisticsItem!
+  recovery: RecoveryStatisticsItem!
+}
+
+type AssetMetadata {
+  deposit: String!
+  name: String
+  symbol: String
+  decimals: Int!
+  isFrozen: Boolean!
+}
+
+type AssetDetail {
+  owner: String
+  issuer: String
+  admin: String
+  freezer: String
+  supply: String
+  deposit: String
+  minBalance: String
+  isSufficient: Boolean
+  accounts: Int
+  sufficients: Int
+  approvals: Int
+  status: String
+}
+
+type Asset {
+  assetId: String!
+  assetHeight: Int!
+  detail: AssetDetail
+  metadata: AssetMetadata
+  destroyed: Boolean!
+  destroyedAt: Indexer
+}
+
+type PagedAsset {
+  assets: [Asset]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+enum AssetSort {
+  HOLDERS_DESC
+  ASSET_ID_ASC
+}
+
+type Transfer {
+  assetId: Int!
+  assetHeight: Int!
+  from: String
+  to: String
+  balance: String
+  indexer: Indexer!
+}
+
+type PagedTransfer {
+  transfers: [Transfer]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Holder {
+  address: String
+  assetId: Int!
+  assetHeight: Int!
+  asset: Asset
+  balance: String
+  isFrozen: Boolean
+  reason: JSONObject
+  status: String
+}
+
+type PagedHolder {
+  holders: [Holder]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Timeline {
+  assetId: Int!
+  assetHeight: Int!
+  name: String!
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedTimeline {
+  items: [Timeline]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Statistics {
+  assetId: Int!
+  assetHeight: Int!
+  transferCount: Int!
+  holderCount: Int!
+  timelineCount: Int!
+}
+
+type StatisticsWithIndexer {
+  assetId: Int!
+  assetHeight: Int!
+  transferCount: Int!
+  transferAmount: String
+  holderCount: Int!
+  indexer: Indexer!
+}
+
+type MultisigAddress {
+  address: String!
+  signatories: [String]!
+  threshold: Int!
+  debutAt: Indexer!
+  latestMultisigAt: Indexer!
+}
+
+type PagedMultisigAddresses {
+  multisigAddresses: [MultisigAddress]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type State {
+  name: String!
+  args: JSONObject
+}
+
+type When {
+  height: Int!
+  index: Int!
+}
+
+type Multisig {
+  id: String!
+  address: String!
+  signatories: [String]!
+  signatoriesCount: Int!
+  threshold: Int!
+  when: When!
+  approvals: [String]!
+  state: State!
+  deposit: Float!
+  depositor: String
+  callHash: String!
+  call: JSONObject
+  callHex: String
+  indexer: Indexer!
+  updateAt: Indexer
+  isFinal: Boolean!
+}
+
+type PagedMultisigs {
+  multisigs: [Multisig]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type MultisigTimelineItem {
+  multisigId: String
+  multisigAddress: String!
+  callHash: String!
+  whenHeight: Int!
+  whenExtrinsicIndex: Int!
+  type: String!
+  name: String!
+  args: JSONObject
+  indexer: Indexer!
+}
+
+enum MultisigState {
+  APPROVING
+  EXECUTED
+  CANCELLED
+}
+
+enum MultisigAddressSort {
+  DEBUT_AT_HEIGHT_DESC
+  DEBUT_AT_HEIGHT_ASC
+  LATEST_MULTISIG_AT_HEIGHT_DESC
+  LATEST_MULTISIG_AT_HEIGHT_ASC
+}
+
+type IdentityInfo {
+  display: String
+  legal: String
+  web: String
+  riot: String
+  email: String
+  image: String
+  pgpFingerprint: String
+  twitter: String
+  additional: JSONObject
+}
+
+type IdentitySubInfo {
+  account: String
+  name: String
+}
+
+type Judgement {
+  registrarIndex: Int!
+  judgement: String!
+}
+
+type Identity {
+  account: String!
+  deposit: String
+  display: String
+  fullDisplay: String
+  subDisplay: String
+  info: IdentityInfo
+  isSub: Boolean
+  judgements: [Judgement]
+  parentAddress: String
+  parentInfo: Identity
+  subs: [IdentitySubInfo]
+  subsCount: Int!
+  subsDeposit: String
+  lastUpdate: Indexer!
+}
+
+type PagedIdentities {
+  identities: [Identity]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type TimelineItem {
+  account: String!
+  name: String!
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type RegistrarStat {
+  request: Int!
+  given: Int!
+  totalFee: String!
+}
+
+type Registrar {
+  index: Int!
+  account: String!
+  fee: String!
+  identity: Identity
+  statistics: RegistrarStat!
+}
+
+type RequestStatus {
+  name: String!
+  indexer: Indexer!
+}
+
+type Request {
+  account: String!
+  registrarIndex: Int!
+  registrar: String!
+  status: RequestStatus!
+  indexer: Indexer!
+  isFinal: Boolean!
+}
+
+type RequestTimeline {
+  account: String!
+  registrarIndex: Int!
+  requestHeight: Int!
+  name: String!
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedRequests {
+  requests: [Request]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+enum RequestSort {
+  REQUEST_HEIGHT_ASC
+  REQUEST_HEIGHT_DESC
+}
+
+enum RequestStatusValue {
+  PENDING
+  REMOVED
+  CANCELLED
+  GIVEN
+}
+
+type IdentityStatistics {
+  verified: Int!
+  unverified: Int!
+  erroneous: Int!
+}
+
+type AllStatistics {
+  identity: IdentityStatistics!
+  registrars: Int!
+  subIdentity: Int!
+  request: Int!
+  judgementGiven: Int!
+}
+
+enum IdentitySubType {
+  DIRECT
+  SUB
+}
+
+enum VerificationStatus {
+  VERIFIED
+  UNVERIFIED
+  ERRONEOUS
+}
+
+type Proxy {
+  proxyId: String!
+  delegator: String!
+  delegatee: String!
+  type: String!
+  delay: Int
+  isRemoved: Boolean!
+  isPure: Boolean!
+  disambiguationIndex: Int
+  indexer: Indexer!
+}
+
+type ProxyTimeline {
+  proxyId: String!
+  name: String
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedProxy {
+  items: [Proxy]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type ProxyCall {
+  proxyId: String!
+  delegator: String!
+  delegatee: String!
+  forceProxyType: String!
+  proxyType: String!
+  delay: Int
+  normalizedCall: JSONObject
+  callHash: String!
+  callHex: String!
+  eventData: JSONObject
+  indexer: Indexer!
+}
+
+type PagedProxyCall {
+  items: [ProxyCall]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}
+
+type Announcement {
+  announcementId: String!
+  delegator: String!
+  delegatee: String!
+  callHash: String!
+  normalizedCall: JSONObject
+  isFinal: Boolean!
+  executedAt: Indexer
+  removedAt: Indexer
+  rejectedAt: Indexer
+  state: String!
+  indexer: Indexer!
+}
+
+type AnnouncementTimeline {
+  announcementId: String!
+  name: String
+  args: JSONObject
+  indexer: Indexer!
+}
+
+type PagedAnnouncement {
+  items: [Announcement]!
+  offset: Int!
+  limit: Int!
+  total: Int!
+}

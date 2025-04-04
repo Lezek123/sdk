@@ -1,3 +1,3 @@
 export { AnyEntity } from './__generated__/QueryApi'
-export * from './consts'
-export * from './OrionApi'
+export { ALL_ENTITIES, HIDDEN_ENTITIES, VISIBLE_ENTITIES } from './consts'
+export { OrionApi } from './OrionApi'

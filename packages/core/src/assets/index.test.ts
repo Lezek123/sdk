@@ -1,6 +1,7 @@
 import { describe, test } from '@jest/globals'
 import { HAPI_PER_JOY, hapiToJoy, joyToHapi } from '../assets'
 import { InvalidAmountError } from './errors'
+import { toBN } from '../utils'
 
 const successCases = [
   { hapi: 1, joy: 0.0000000001 },
@@ -20,6 +21,9 @@ describe('Assets', () => {
           expect(hapiToJoy(BigInt(hapi))).toEqual(joy)
         })
       }
+      test(`${hapi} HAPI (BN) === ${joy} JOY`, () => {
+        expect(hapiToJoy(toBN(hapi))).toEqual(joy)
+      })
       test(`${hapi} HAPI (string) === ${joy} JOY`, () => {
         expect(hapiToJoy(hapi.toString())).toEqual(joy)
       })

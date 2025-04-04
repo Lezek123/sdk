@@ -2,7 +2,8 @@
 sidebar_position: 2
 ---
 
-import {GhLink, consts} from '@site/src/utils';
+import consts from '@site/src/consts'
+import { GhLink } from '@site/src/components/GhLink';
 import CodeBlock from '@theme/CodeBlock';
 
 # Keys module
@@ -192,7 +193,7 @@ yarn start
 
 You should see a simple UI like this:
 
-![React example UI](./keys-react.png)
+![React example UI](./assets/keys-react.png)
 
 The example React app allows you to add keys using 3 different ways:
 
@@ -215,7 +216,7 @@ The example React app allows you to add keys using 3 different ways:
 
 You can verify the signing process by signing an example message using the `Sign` button:
 
-![React example signing](./sign-react.png)
+![React example signing](./assets/sign-react.png)
 
 ### CLI
 

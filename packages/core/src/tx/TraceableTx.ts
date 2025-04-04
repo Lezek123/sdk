@@ -11,8 +11,8 @@ import {
   TxBalanceError,
   TxMetaprotocolStatusError,
   TxMissingParamError,
-  TxRuntimeError,
-  TxSendError,
+  TxDispatchError,
+  TxRejectedError,
   TxStatusError,
 } from './errors'
 import { BlockUtils } from '../chain/blocks'
@@ -28,6 +28,7 @@ import { KeyManager } from '../keys'
 import { errorMsg, toError } from '../utils'
 import { v7 as uuid } from 'uuid'
 import RpcError from '@polkadot/rpc-provider/coder/error'
+import { isPureMetaAction } from './metaTransactions'
 
 // TODO: Improve logging, error handling
 export class TraceableTx<
@@ -36,6 +37,7 @@ export class TraceableTx<
   'signed': []
   'sent': []
   'in_block': [{ blockHash: `0x${string}`; dispatchError?: DispatchError }]
+  'retracted': [{ blockHash: `0x${string}` }]
   'finalized': [{ blockHash: `0x${string}`; dispatchError?: DispatchError }]
   'error': [Error]
   'processed': [{ by: BlockProcessorApi; result?: MetaTxStatus }]
@@ -89,6 +91,10 @@ export class TraceableTx<
       this.debug(`Status:`, result.status.toHuman())
       this._status = result.status.type
 
+      if (result.status.isRetracted) {
+        this.emit('retracted', { blockHash: result.status.asRetracted.toHex() })
+      }
+
       if (!result.isCompleted) {
         return
       }
@@ -96,7 +102,7 @@ export class TraceableTx<
       const { dispatchError } = result
 
       if (dispatchError) {
-        this.emit('error', new TxRuntimeError(this.tx, dispatchError))
+        this.emit('error', new TxDispatchError(this.tx, dispatchError))
       }
 
       if (result.status.isInBlock) {
@@ -130,7 +136,7 @@ export class TraceableTx<
           )
         }
       } else {
-        throw new TxSendError(this.tx, errorMsg(e))
+        throw new TxRejectedError(this.tx, errorMsg(e))
       }
     }
   }
@@ -177,14 +183,14 @@ export class TraceableTx<
           this.unsubscribe()
         }
         if (this._lastResult?.dispatchError) {
-          reject(new TxRuntimeError(this.tx, this._lastResult.dispatchError))
+          reject(new TxDispatchError(this.tx, this._lastResult.dispatchError))
         } else {
           resolve(this)
         }
       }
       const onError = (error: Error) => {
         // Ignore DispatchError here, we'll reject after `in_block` event
-        if (error instanceof TxRuntimeError) {
+        if (error instanceof TxDispatchError) {
           return
         }
         this.off('in_block', onInBlock)
@@ -207,14 +213,14 @@ export class TraceableTx<
       const onFinalized = () => {
         this.off('error', onError)
         if (this._lastResult?.dispatchError) {
-          reject(new TxRuntimeError(this.tx, this._lastResult.dispatchError))
+          reject(new TxDispatchError(this.tx, this._lastResult.dispatchError))
         } else {
           resolve(this)
         }
       }
       const onError = (error: Error) => {
         // Ignore any intermediate DispatchErrors
-        if (error instanceof TxRuntimeError) {
+        if (error instanceof TxDispatchError) {
           return
         }
         this.off('finalized', onFinalized)
@@ -237,15 +243,17 @@ export class TraceableTx<
 
   public async metaProcessedBy(api: MetadataProcessorApi): Promise<this> {
     await this.processedBy(api)
-    const status = await api.metaTxStatus(this.tx.hash.toHex())
-    if (!status) {
-      throw new TxMetaprotocolStatusError(
-        this.tx,
-        'Missing metaprotocol status event'
-      )
-    }
-    if (!status.isSuccess) {
-      throw new TxMetaprotocolStatusError(this.tx, status.error)
+    if (isPureMetaAction(this.tx)) {
+      const status = await api.metaTxStatus(this.tx.hash.toHex())
+      if (!status) {
+        throw new TxMetaprotocolStatusError(
+          this.tx,
+          'Missing metaprotocol status event'
+        )
+      }
+      if (!status.isSuccess) {
+        throw new TxMetaprotocolStatusError(this.tx, status.error)
+      }
     }
     return this
   }

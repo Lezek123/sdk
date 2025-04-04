@@ -5,7 +5,7 @@ sidebar_position: 1
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
-import { consts } from '@site/src/utils'
+import consts from '@site/src/consts'
 
 # Getting started
 

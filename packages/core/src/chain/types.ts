@@ -16,6 +16,7 @@ import {
 } from '@polkadot/types'
 import { AnyMetadataClass } from '@joystream/metadata-protobuf/types'
 import { createType } from '@joystream/types'
+import { Long } from 'long'
 
 export type EnumVariant<T> = keyof T extends infer K
   ? K extends keyof T
@@ -101,6 +102,27 @@ export function metaToHex<T>(
       'hex'
     )) as `0x${string}`
 }
+
+type MetadataScalar =
+  | Long
+  | string
+  | number
+  | boolean
+  | Uint8Array
+  | null
+  | undefined
+
+type RecursiveReplace<T, S, R> = T extends S
+  ? R
+  : T extends MetadataScalar
+    ? T
+    : T extends Array<infer I>
+      ? Array<RecursiveReplace<I, S, R>>
+      : {
+          [K in keyof T]: RecursiveReplace<T[K], S, R>
+        }
+
+export type MetaInput<IMeta> = RecursiveReplace<IMeta, Long, number | Long>
 
 export function metaToBytes<T>(metaClass: AnyMetadataClass<T>, obj: T): Bytes {
   return createType('Bytes', metaToHex(metaClass, obj))

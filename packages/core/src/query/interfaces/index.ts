@@ -1,2 +1,2 @@
-export * from './BlockProcessorApi'
-export * from './MetadataProcessorApi'
+export { BlockProcessorApi } from './BlockProcessorApi'
+export { MetaTxStatus, MetadataProcessorApi } from './MetadataProcessorApi'

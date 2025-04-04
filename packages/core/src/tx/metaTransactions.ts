@@ -10,7 +10,7 @@ import {
   PalletContentVideoUpdateParametersRecord,
   PalletMembershipBuyMembershipParameters,
 } from '@polkadot/types/lookup'
-import { AsSimple, metaToBytes } from '../chain/types'
+import { AsSimple, MetaInput, metaToBytes } from '../chain/types'
 import {
   AppAction,
   ChannelMetadata,
@@ -28,6 +28,8 @@ import {
   VideoMetadata,
 } from '@joystream/metadata-protobuf'
 import { AnyMetadataClass } from '@joystream/metadata-protobuf/types'
+import { SubmittableExtrinsic } from '@polkadot/api/types'
+import { isCall } from './calls'
 
 export type WithReplaced<Original, Replacement> = Omit<
   Original,
@@ -40,8 +42,9 @@ export type MetaTxParams<Original, Replacement> = WithReplaced<
   Replacement
 >
 
-export type MemberRemarkParams<Kind extends keyof IMemberRemarked> =
-  IMemberRemarked[Kind] & { memberId: number | bigint }
+export type MemberRemarkParams<Kind extends keyof IMemberRemarked> = MetaInput<
+  IMemberRemarked[Kind]
+> & { memberId: number | bigint }
 
 export function memberRemarkMetaTx<Kind extends keyof IMemberRemarked>(
   api: ApiPromise,
@@ -59,7 +62,7 @@ export function memberRemarkMetaTx<Kind extends keyof IMemberRemarked>(
 }
 
 export type ChannelOwnerRemarkParams<Kind extends keyof IChannelOwnerRemarked> =
-  IChannelOwnerRemarked[Kind] & { channelId: number | bigint }
+  MetaInput<IChannelOwnerRemarked[Kind]> & { channelId: number | bigint }
 
 export function channelOwnerRemarkMetaTx<
   Kind extends keyof IChannelOwnerRemarked,
@@ -78,7 +81,7 @@ export function channelOwnerRemarkMetaTx<
 
 export type ChannelModeratorRemarkParams<
   Kind extends keyof IChannelModeratorRemarked,
-> = IChannelModeratorRemarked[Kind] & {
+> = MetaInput<IChannelModeratorRemarked[Kind]> & {
   channelId: number | bigint
   actor: AsSimple<PalletContentPermissionsContentActor>
 }
@@ -99,13 +102,13 @@ export function channelModeratorRemarkMetaTx<
 
 export type BuyMembershipParams = MetaTxParams<
   PalletMembershipBuyMembershipParameters,
-  { metadata?: IMembershipMetadata }
+  { metadata?: MetaInput<IMembershipMetadata> }
 >
 
 export type UpdateProfileParams = {
   memberId: number | bigint
   handle?: string
-  metadata?: IMembershipMetadata
+  metadata?: MetaInput<IMembershipMetadata>
 }
 
 export type AppAttributionParams = {
@@ -116,7 +119,7 @@ export type AppAttributionParams = {
 
 export type CreateChannelParams = MetaTxParams<
   PalletContentChannelCreationParametersRecord,
-  { meta?: IChannelMetadata }
+  { meta?: MetaInput<IChannelMetadata> }
 > & {
   owner: AsSimple<PalletContentChannelOwner>
   appAttribution?: AppAttributionParams
@@ -124,7 +127,7 @@ export type CreateChannelParams = MetaTxParams<
 
 export type UpdateChannelParams = MetaTxParams<
   PalletContentChannelUpdateParametersRecord,
-  { newMeta?: IChannelMetadata }
+  { newMeta?: MetaInput<IChannelMetadata> }
 > & {
   actor: AsSimple<PalletContentPermissionsContentActor>
   channelId: number | bigint
@@ -132,7 +135,7 @@ export type UpdateChannelParams = MetaTxParams<
 
 export type CreateVideoParams = MetaTxParams<
   PalletContentVideoCreationParametersRecord,
-  { meta?: IVideoMetadata }
+  { meta?: MetaInput<IVideoMetadata> }
 > & {
   actor: AsSimple<PalletContentPermissionsContentActor>
   channelId: number | bigint
@@ -141,7 +144,7 @@ export type CreateVideoParams = MetaTxParams<
 
 export type UpdateVideoParams = MetaTxParams<
   PalletContentVideoUpdateParametersRecord,
-  { newMeta?: IVideoMetadata }
+  { newMeta?: MetaInput<IVideoMetadata> }
 > & {
   actor: AsSimple<PalletContentPermissionsContentActor>
   videoId: number | bigint
@@ -158,6 +161,14 @@ export function asAppAction<T>(
     metadata: u8aToU8a(metadata),
     rawAction: rawMeta && rawMetaClass.encode(rawMeta).finish(),
   }
+}
+
+export function isPureMetaAction(tx: SubmittableExtrinsic<'promise'>) {
+  return (
+    isCall(tx, 'members', 'memberRemark') ||
+    isCall(tx, 'content', 'channelOwnerRemark') ||
+    isCall(tx, 'content', 'channelAgentRemark')
+  )
 }
 
 export function metaTransactions(api: ApiPromise) {
