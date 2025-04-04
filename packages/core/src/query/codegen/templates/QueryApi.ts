@@ -20,6 +20,7 @@ import {
 } from '@joystream/sdk-core/query/errors'
 import { rootDebug } from '@joystream/sdk-core/utils/debug'
 import { ClientOptions } from './genql/runtime'
+import retry, { OperationOptions } from 'retry'
 
 export type Config = {
   // Maximum size of an array of input arguments to a query (for example, list of ids in `query.Entity.byIds`)
@@ -30,12 +31,18 @@ export type Config = {
   concurrentRequestsLimit: number
   // GenQL client options
   clientOptions?: ClientOptions
+  // Retry configuration
+  retry?: OperationOptions
 }
 
 export const DEFAULT_CONFIG: Config = {
   inputBatchSize: 1000,
   resultsPerQueryLimit: 1000,
-  concurrentRequestsLimit: 20,
+  concurrentRequestsLimit: 10,
+  retry: {
+    retries: 3,
+    minTimeout: 100,
+  },
 }
 
 type ArgsOf<Q extends keyof QueryGenqlSelection> =
@@ -516,10 +523,23 @@ export class QueryApi<P extends PaginationType = PaginationType.Connection> {
   public runQuery<Q extends QueryGenqlSelection>(
     query: Q
   ): Promise<FieldsSelection<Query, Q>> {
-    const debug = this._debug.extend('query')
-    debug(generateQueryOp(query).query)
+    return new Promise((resolve, reject) => {
+      const debug = this._debug.extend('query')
+      const operation = retry.operation()
 
-    return this.runWithReqLimit(() => this._client.query(query))
+      operation.attempt(async (currentAttempt) => {
+        debug(
+          `attempt: ${currentAttempt}, query: ${JSON.stringify(generateQueryOp(query))}`
+        )
+        this.runWithReqLimit(() => this._client.query(query))
+          .then(resolve)
+          .catch((e) => {
+            if (!operation.retry(e)) {
+              reject(e)
+            }
+          })
+      })
+    })
   }
 
   protected async runWithReqLimit<T>(req: () => Promise<T>): Promise<T> {
