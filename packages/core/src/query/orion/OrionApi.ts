@@ -96,4 +96,8 @@ export class OrionApi
 
     return squidStatus.height
   }
+
+  public get endpoint() {
+    return this.url
+  }
 }

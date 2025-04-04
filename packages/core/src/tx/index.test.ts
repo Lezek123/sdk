@@ -12,7 +12,7 @@ import assert from 'node:assert'
 import {
   TxBalanceError,
   TxMetaprotocolStatusError,
-  TxRuntimeError,
+  TxDispatchError,
   TxStatusError,
 } from './errors'
 import { endpoints } from '../utils/endpoints'
@@ -198,7 +198,7 @@ describe('TxManager', () => {
       )
       await expectError(
         () => tracked.inBlock(true),
-        TxRuntimeError,
+        TxDispatchError,
         /MemberProfileNotFound/
       )
       await expectStatusInBlock(tracked)
@@ -392,11 +392,11 @@ describe('TxManager', () => {
             api.tx.balances.transfer(charlie, joyToHapi(2)),
           ],
           alice,
-          { strategy: BatchStrategy.RollbackOnFailue }
+          { strategy: BatchStrategy.RollbackOnFailure }
         )
         await expectError(
           () => tracked.inBlock(true),
-          TxRuntimeError,
+          TxDispatchError,
           /MemberProfileNotFound/
         )
         const { lastResult } = tracked
@@ -414,7 +414,7 @@ describe('TxManager', () => {
             api.tx.balances.transfer(to, amount)
           ),
           alice,
-          { strategy: BatchStrategy.RollbackOnFailue }
+          { strategy: BatchStrategy.RollbackOnFailure }
         )
         await tracked.inBlock(true)
         expect(tracked.lastResult.callResults.length).toEqual(transfers.length)

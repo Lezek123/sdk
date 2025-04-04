@@ -5,7 +5,27 @@ import { generate } from '@genql/cli'
 import { rootDebug } from '@joystream/sdk-core/utils/debug'
 import { generateEntityInfo } from './generateEntityInfo'
 
-const APPS = ['queryNode', 'orion', 'storageSquid'] as const
+const APPS = {
+  queryNode: {
+    squid: true,
+  },
+  orion: {
+    squid: true,
+  },
+  storageSquid: {
+    squid: true,
+  },
+  statescan: {
+    squid: false,
+  },
+}
+
+const SQUID_SCALARS = {
+  DateTime: 'string',
+  BigInt: 'string',
+  BigDecimal: 'string',
+  Bytes: 'string',
+}
 
 const PKG_ROOT_PATH = path.join(__dirname, '..')
 
@@ -39,7 +59,7 @@ async function withDisabledDebug<T>(
 
 async function main() {
   const debug = rootDebug.extend('codegen')
-  for (const appName of APPS) {
+  for (const [appName, { squid }] of Object.entries(APPS)) {
     debug(`Generating an API for ${_.startCase(appName)} GraphQL server`)
     const appDebug = debug.extend(appName)
     appDebug(
@@ -55,33 +75,30 @@ async function main() {
       generate({
         schema,
         output: genQLApiPath,
-        scalarTypes: {
-          DateTime: 'string',
-          BigInt: 'string',
-          BigDecimal: 'string',
-          Bytes: 'string',
-        },
+        scalarTypes: squid ? SQUID_SCALARS : undefined,
       })
     )
 
-    // Generate entity info
-    const entityInfoPath = path.join(
-      generatedFilesPath(appName),
-      'entityInfo.ts'
-    )
-    appDebug(`Extracting entity info to ${entityInfoPath}...`)
-    const genQLTypesModulePath = path
-      .relative(
-        __dirname,
-        path.join(generatedFilesPath(appName), 'genql', 'types')
+    if (squid) {
+      // Generate entity info
+      const entityInfoPath = path.join(
+        generatedFilesPath(appName),
+        'entityInfo.ts'
       )
-      .replace(path.sep, '/')
-    const { default: genQLTypes } = await import(genQLTypesModulePath)
-    await generateEntityInfo(genQLTypes, entityInfoPath)
-    // "Generate" Query API
-    const queryApiPath = path.join(generatedFilesPath(appName), 'QueryApi.ts')
-    appDebug(`Building the QueryApi.ts from template to ${queryApiPath}...`)
-    await fs.writeFile(queryApiPath, await buildQueryApiTemplate())
+      appDebug(`Extracting entity info to ${entityInfoPath}...`)
+      const genQLTypesModulePath = path
+        .relative(
+          __dirname,
+          path.join(generatedFilesPath(appName), 'genql', 'types')
+        )
+        .replace(path.sep, '/')
+      const { default: genQLTypes } = await import(genQLTypesModulePath)
+      await generateEntityInfo(genQLTypes, entityInfoPath)
+      // "Generate" Query API
+      const queryApiPath = path.join(generatedFilesPath(appName), 'QueryApi.ts')
+      appDebug(`Building the QueryApi.ts from template to ${queryApiPath}...`)
+      await fs.writeFile(queryApiPath, await buildQueryApiTemplate())
+    }
     appDebug('Done')
   }
   debug('Codegen completed')

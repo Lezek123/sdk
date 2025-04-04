@@ -1,10 +1,10 @@
 import React from 'react'
-import { snippetScope } from '../../snippets/snippet'
+import { createSnippetContext } from '../../snippets/snippet'
 
 // Add react-live imports you need here
 const ReactLiveScope: unknown = {
   React,
-  ...snippetScope,
+  context: createSnippetContext(),
   ...React,
 }
 

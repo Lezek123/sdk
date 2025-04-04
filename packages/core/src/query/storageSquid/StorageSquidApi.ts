@@ -36,4 +36,8 @@ export class StorageSquidApi
       await sleep(1000)
     }
   }
+
+  public get endpoint() {
+    return this.url
+  }
 }

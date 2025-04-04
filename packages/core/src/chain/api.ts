@@ -5,14 +5,20 @@ import { AugmentedQuery } from '@polkadot/api/types'
 import { u8aToBigInt } from '@polkadot/util'
 import { Health } from '@polkadot/types/interfaces'
 import { promisifySubscription } from '../utils'
+import { MAINNET_GENESIS_HASH } from './consts'
 
 export async function createApi(wsUri: string) {
+  // TODO: Or fail?
   const wsProvider = new WsProvider(wsUri)
   const api = await ApiPromise.create({
     provider: wsProvider,
   })
 
   return api
+}
+
+export function isMainnet(api: ApiPromise) {
+  return api.genesisHash.toHex() === MAINNET_GENESIS_HASH
 }
 
 export async function isSyncing(api: ApiPromise): Promise<boolean> {
@@ -41,7 +47,8 @@ export async function sortedEntries<
 >(
   apiMethod: AugmentedQuery<
     'promise',
-    (key: IDType) => Observable<ValueType>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (key: any) => Observable<ValueType>,
     [IDType]
   >
 ): Promise<[IDType, AsCodec<ValueType>][]> {

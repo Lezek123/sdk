@@ -1,2 +1,2 @@
-export * from './consts'
-export * from './StorageSquidApi'
+export { ALL_ENTITIES } from './consts'
+export { StorageSquidApi } from './StorageSquidApi'

@@ -34,7 +34,7 @@ export class TxError extends Error {
   }
 }
 
-export class TxSendError extends TxError {
+export class TxRejectedError extends TxError {
   constructor(tx: SubmittableExtrinsic<'promise'>, message: string) {
     super(tx, message)
   }
@@ -50,12 +50,19 @@ export class TxBalanceError extends TxError {
 }
 
 export class TxStatusError extends TxError {
+  #status: ExtrinsicStatus
+
   constructor(tx: SubmittableExtrinsic<'promise'>, status: ExtrinsicStatus) {
     super(tx, `Status error: ${status.toString()}`)
+    this.#status = status
+  }
+
+  get status(): ExtrinsicStatus {
+    return this.#status
   }
 }
 
-export class TxRuntimeError extends TxError {
+export class TxDispatchError extends TxError {
   #original: DispatchError
 
   constructor(tx: SubmittableExtrinsic<'promise'>, e: DispatchError) {

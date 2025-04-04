@@ -44,7 +44,10 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
-  themes: ['@docusaurus/theme-live-codeblock'],
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-live-codeblock', '@docusaurus/theme-mermaid'],
   themeConfig: {
     // Replace with your project's social card
     image: 'img/social-card.png',

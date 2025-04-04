@@ -147,4 +147,8 @@ export class QueryNodeApi
       })
     })
   }
+
+  public get endpoint() {
+    return this.url
+  }
 }
