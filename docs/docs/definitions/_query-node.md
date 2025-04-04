@@ -1,0 +1,2 @@
+**Query node** - one of the Joystream services responsible for processing event data from the Joystream blockchain into higher level abstractions (entities), like e.g. `Membership`, `Video` or `CouncilElections`, which can then be easily queried via a rich GraphQL API it provides. It was built using a framework called Hydra (inspired by Ethereum's [The Graph](https://thegraph.com/)), which was later developed into [Squid SDK](https://www.sqd.ai/sdk).
+It's open-source and [available on GitHub](https://github.com/Joystream/joystream/tree/master/query-node).

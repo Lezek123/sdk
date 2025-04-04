@@ -6,20 +6,28 @@
   "author": "Leszek Wiesner",
   "main": "index.js",
   "dependencies": {
+    "@joystream/metadata-protobuf": "^2.16.0",
     "@joystream/types": "^4.6.1",
     "@polkadot/api": "10.7.1",
     "@talismn/connect-wallets": "^1.2.8",
     "@walletconnect/modal": "^2.7",
     "@walletconnect/universal-provider": "^2.18",
+    "async-lock": "^1.4.1",
     "axios": "1.7.9",
     "debug": "^4.4.0",
+    "graphql-ws": "^6.0.4",
     "lodash": "^4.17.21",
-    "queue": "^6.0.0"
+    "queue": "^6.0.0",
+    "retry": "^0.13.1",
+    "subscriptions-transport-ws": "^0.11.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@genql/cli": "^6.3.3",
+    "@types/async-lock": "^1.4.2",
     "@types/debug": "^4.1.12",
     "@types/lodash": "^4",
+    "@types/retry": "^0",
     "@types/ws": "^8.5.14"
   },
   "typesVersions": {

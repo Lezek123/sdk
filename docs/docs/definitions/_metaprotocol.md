@@ -1,0 +1,3 @@
+import {GlossaryLink} from '@site/src/components/Glossary';
+
+**Metaprotocol** - in context of Joystream, metaprotocol is a set of messages defined with [Protocol Buffers](https://protobuf.dev/) that can be serialized and included as extrinsic arguments, even though the Joystream runtime doesn't _understand_ /parse them (instead, they are parsed by event processors, such as those inside <GlossaryLink to="query-node" /> or <GlossaryLink to="orion"/>). The library containing the definitions of currently supported metaprotocol messages is [`@joystream/metadata-protobuf`](https://github.com/Joystream/joystream/tree/master/metadata-protobuf).

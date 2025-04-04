@@ -20,6 +20,7 @@ import {
 } from '@joystream/sdk-core/query/errors'
 import { rootDebug } from '@joystream/sdk-core/utils/debug'
 import { ClientOptions } from './genql/runtime'
+import retry, { OperationOptions } from 'retry'
 
 export type Config = {
   // Maximum size of an array of input arguments to a query (for example, list of ids in `query.Entity.byIds`)
@@ -30,12 +31,18 @@ export type Config = {
   concurrentRequestsLimit: number
   // GenQL client options
   clientOptions?: ClientOptions
+  // Retry configuration
+  retry?: OperationOptions
 }
 
 export const DEFAULT_CONFIG: Config = {
   inputBatchSize: 1000,
   resultsPerQueryLimit: 1000,
-  concurrentRequestsLimit: 20,
+  concurrentRequestsLimit: 10,
+  retry: {
+    retries: 3,
+    minTimeout: 100,
+  },
 }
 
 type ArgsOf<Q extends keyof QueryGenqlSelection> =
@@ -379,6 +386,41 @@ class EntityQueryUtils<E extends AnyEntity, P extends PaginationType> {
     return results.flat() as ExtractedResult<MultiQueryOf<E>, S>
   }
 
+  async first<
+    S extends SelectionOf<MultiQueryOf<E>>,
+    W extends WhereOf<MultiQueryOf<E>>,
+    O extends OrderByOf<MultiQueryOf<E>>,
+  >(args: {
+    where?: W
+    select?: S
+    orderBy?: O
+  }): Promise<ExtractedResult<UniqueQueryOf<E>, S> | null> {
+    const multiQuery = ENTITY_INFO[this.entity]['multiQuery']
+    const q = {
+      __args: {
+        where: args.where,
+        orderBy: args.orderBy,
+        limit: 1,
+      },
+      ...(args.select || this.defaultSelection),
+    }
+    const query = { [multiQuery]: q } as { [K in MultiQueryOf<E>]: typeof q }
+    const result = await this.runQuery(query)
+
+    if (multiQuery in result && result[multiQuery as keyof typeof result]) {
+      const extracted = result[multiQuery as keyof typeof result]
+      if (extracted) {
+        if (Array.isArray(extracted) && extracted.length) {
+          return extracted[0]
+        } else {
+          return null
+        }
+      }
+    }
+
+    throw new UnexpectedEmptyResult(this.entity, result)
+  }
+
   async byId(
     id: string
   ): Promise<ExtractedResult<UniqueQueryOf<E>, DefaultSelectionOf<E>>>
@@ -444,15 +486,15 @@ type AllEntitiesQueryUtils<P extends PaginationType> = {
 }
 
 export class QueryApi<P extends PaginationType = PaginationType.Connection> {
-  private _config: Config
-  private _requestsQueue: Queue
-  private _client: Client
-  private _debug: Debugger
+  protected _config: Config
+  protected _requestsQueue: Queue
+  protected _client: Client
+  protected _debug: Debugger
   public query: AllEntitiesQueryUtils<P>
 
   public constructor(
-    private url: string,
-    private paginationType: P,
+    protected url: string,
+    protected paginationType: P,
     config?: Partial<Config>
   ) {
     this._config = { ...DEFAULT_CONFIG, ...config }
@@ -481,13 +523,26 @@ export class QueryApi<P extends PaginationType = PaginationType.Connection> {
   public runQuery<Q extends QueryGenqlSelection>(
     query: Q
   ): Promise<FieldsSelection<Query, Q>> {
-    const debug = this._debug.extend('query')
-    debug(generateQueryOp(query).query)
+    return new Promise((resolve, reject) => {
+      const debug = this._debug.extend('query')
+      const operation = retry.operation()
 
-    return this.runWithReqLimit(() => this._client.query(query))
+      operation.attempt(async (currentAttempt) => {
+        debug(
+          `attempt: ${currentAttempt}, query: ${JSON.stringify(generateQueryOp(query))}`
+        )
+        this.runWithReqLimit(() => this._client.query(query))
+          .then(resolve)
+          .catch((e) => {
+            if (!operation.retry(e)) {
+              reject(e)
+            }
+          })
+      })
+    })
   }
 
-  private async runWithReqLimit<T>(req: () => Promise<T>): Promise<T> {
+  protected async runWithReqLimit<T>(req: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       async function job() {
         try {

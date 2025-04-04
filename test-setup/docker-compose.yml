@@ -1,3 +1,5 @@
-name: 'sdk-testing-setup'
+name: 'sdk-testing'
 include:
-  - docker-compose.orion.yml
+  - docker-compose.node.yml
+  - docker-compose.orion.mock.yml
+  - docker-compose.qn.yml

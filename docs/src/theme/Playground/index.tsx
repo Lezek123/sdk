@@ -13,6 +13,7 @@ import type { Props } from '@theme/Playground'
 import type { ThemeConfig } from '@docusaurus/theme-live-codeblock'
 
 import styles from './styles.module.css'
+import { transformLiveCode } from './transformLiveCode'
 
 function LivePreviewLoader() {
   return <div>Loading...</div>
@@ -63,44 +64,6 @@ function Editor() {
   return <ThemedLiveEditor />
 }
 
-// this should rather be a stable function
-// see https://github.com/facebook/docusaurus/issues/9630#issuecomment-1855682643
-const DEFAULT_TRANSFORM_CODE = (code: string) => `
-() => {
-  const [logs, setLogs] = useState([])
-  const [running, setRunning] = useState(false)
-  const log = (value) => setLogs((l) => [...l, JSON.stringify(value, null, 2)])
-  const runCode = async () => {
-    setLogs([])
-    setRunning(true)
-    ${code}
-    setRunning(false)
-  }
-  return (<>
-    <div>
-      <button
-        disabled={running}
-        className="button button--primary margin-right--xs"
-        onClick={runCode}>
-        { running ? 'Running...' : 'Run example' }
-      </button>
-      {!!logs.length && (
-        <button
-          className="button button--secondary"
-          onClick={() => setLogs([])}>
-          Clear output
-        </button>
-      )}
-    </div>
-    {!!logs.length && (<pre style={{ overflow: "hidden" }} class="margin-vert--md">
-      <div style={{ maxHeight: 200, overflow: "auto", whiteSpace: "pre-wrap" }}>
-        {logs.map((l) => <div>{l}</div>)}
-      </div>
-    </pre>) }
-  </>)
-}
-`
-
 function codePreTransform(code?: string) {
   if (
     !code ||
@@ -108,19 +71,20 @@ function codePreTransform(code?: string) {
   ) {
     return code
   }
-  let start = false
+  let processing = false
   let whitespaceToRm = ''
   let transformed = ''
   for (const line of code.split('\n')) {
     if (line.includes('@snippet-end')) {
-      break
+      processing = false
     }
-    if (start) {
+    if (processing) {
       transformed += line.replace(new RegExp(`^${whitespaceToRm}`), '') + '\n'
     }
     if (line.includes('@snippet-begin')) {
-      start = true
-      whitespaceToRm = line.match(/^[\s]+/)[0]
+      processing = true
+      const wmMatch = line.match(/^[\s]+/)
+      whitespaceToRm = wmMatch ? wmMatch[0] : ''
     }
   }
 
@@ -147,7 +111,7 @@ export default function Playground({
       <LiveProvider
         code={codePreTransform(children).replace(/\n$/, '')}
         noInline={noInline}
-        transformCode={transformCode ?? DEFAULT_TRANSFORM_CODE}
+        transformCode={transformCode ?? transformLiveCode}
         theme={prismTheme}
         {...props}
       >

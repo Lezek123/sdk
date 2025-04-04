@@ -4,9 +4,8 @@ SCRIPT_PATH="$(dirname "${BASH_SOURCE[0]}")"
 set -e
 
 yarn
-yarn lint
-yarn build:examples
-yarn run pack
-cd docs
-yarn
+yarn codegen
 yarn build
+yarn build:examples
+yarn lint
+yarn run pack

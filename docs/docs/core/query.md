@@ -8,6 +8,8 @@ import CodeBlock from '@theme/CodeBlock';
 import qn_byId1 from '!!raw-loader!../../src/snippets/query/queryNode/byId1.ts';
 import qn_byId2 from '!!raw-loader!../../src/snippets/query/queryNode/byId2.ts';
 import qn_byId3 from '!!raw-loader!../../src/snippets/query/queryNode/byId3.ts';
+import qn_first1 from '!!raw-loader!../../src/snippets/query/queryNode/first1.ts';
+import qn_first2 from '!!raw-loader!../../src/snippets/query/queryNode/first2.ts';
 import qn_byIds1 from '!!raw-loader!../../src/snippets/query/queryNode/byIds1.ts';
 import qn_byIds2 from '!!raw-loader!../../src/snippets/query/queryNode/byIds2.ts';
 import qn_byMany1 from '!!raw-loader!../../src/snippets/query/queryNode/byMany1.ts';
@@ -18,6 +20,8 @@ import qn_custom1 from '!!raw-loader!../../src/snippets/query/queryNode/custom1.
 import orion_byId1 from '!!raw-loader!../../src/snippets/query/orion/byId1.ts';
 import orion_byId2 from '!!raw-loader!../../src/snippets/query/orion/byId2.ts';
 import orion_byId3 from '!!raw-loader!../../src/snippets/query/orion/byId3.ts';
+import orion_first1 from '!!raw-loader!../../src/snippets/query/orion/first1.ts';
+import orion_first2 from '!!raw-loader!../../src/snippets/query/orion/first2.ts';
 import orion_byIds1 from '!!raw-loader!../../src/snippets/query/orion/byIds1.ts';
 import orion_byIds2 from '!!raw-loader!../../src/snippets/query/orion/byIds2.ts';
 import orion_byIds3 from '!!raw-loader!../../src/snippets/query/orion/byIds3.ts';
@@ -26,6 +30,17 @@ import orion_byMany2 from '!!raw-loader!../../src/snippets/query/orion/byMany2.t
 import orion_paginate1 from '!!raw-loader!../../src/snippets/query/orion/paginate1.ts';
 import orion_paginate2 from '!!raw-loader!../../src/snippets/query/orion/paginate2.ts';
 import orion_custom1 from '!!raw-loader!../../src/snippets/query/orion/custom1.ts';
+import storageSquid_byId1 from '!!raw-loader!../../src/snippets/query/storageSquid/byId1.ts';
+import storageSquid_byId2 from '!!raw-loader!../../src/snippets/query/storageSquid/byId2.ts';
+import storageSquid_first1 from '!!raw-loader!../../src/snippets/query/storageSquid/first1.ts';
+import storageSquid_first2 from '!!raw-loader!../../src/snippets/query/storageSquid/first2.ts';
+import storageSquid_byIds1 from '!!raw-loader!../../src/snippets/query/storageSquid/byIds1.ts';
+import storageSquid_byIds2 from '!!raw-loader!../../src/snippets/query/storageSquid/byIds2.ts';
+import storageSquid_byMany1 from '!!raw-loader!../../src/snippets/query/storageSquid/byMany1.ts';
+import storageSquid_byMany2 from '!!raw-loader!../../src/snippets/query/storageSquid/byMany2.ts';
+import storageSquid_paginate1 from '!!raw-loader!../../src/snippets/query/storageSquid/paginate1.ts';
+import storageSquid_paginate2 from '!!raw-loader!../../src/snippets/query/storageSquid/paginate2.ts';
+import storageSquid_custom1 from '!!raw-loader!../../src/snippets/query/storageSquid/custom1.ts';
 
 # Query module
 
@@ -45,19 +60,19 @@ This is possible thanks to [GenQL](https://genql.dev/docs) which generates a Typ
   <TabItem value="query-node" label="Query node" default>
   ```typescript
   import { QueryNodeApi } from "@joystream/sdk-core/query/queryNode";
-  const qnApi = new QueryNodeApi("https://query.joystream.org/graphql");
+  const qnApi = new QueryNodeApi("https://mainnet.joystream.dev/query/graphql");
   ```
   </TabItem>
   <TabItem value="orion" label="Orion" default>
   ```typescript
   import { OrionApi } from "@joystream/sdk-core/query/orion";
-  const orionApi = new OrionApi("https://orion.gleev.xyz/graphql");
+  const orionApi = new OrionApi("https://mainnet.joystream.dev/orion/graphql");
   ```
   </TabItem>
   <TabItem value="storage-squid" label="Storage squid" default>
   ```typescript
   import { StorageSquidApi } from '@joystream/sdk-core/query/storageSquid';
-  const storageSquidApi = new StorageSquidApi("http://localhost:4352/graphql");
+  const storageSquidApi = new StorageSquidApi("https://mainnet.joystream.dev/storage/squid/graphql");
   ```
   </TabItem>
 </Tabs>
@@ -123,27 +138,55 @@ qApi.query.**_ENTITY_NAME_**.byId(**_ID_**, **_SELECTION_**) // Selects specifie
     </CodeBlock>
   </TabItem>
   <TabItem value="storage-squid" label="Storage squid" default>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byId1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byId2}
+    </CodeBlock>
+  </TabItem>
+</Tabs>
 
-    ```typescript
-    // Get all scalar fields of storage bucket by id=0
-    const storageBucket = await storageSquidApi.query.StorageBucket.byId('0')
-    ```
+### Get first result
 
-    ```typescript
-    // Get storage bag of channel 1, along with some information about its data objects
-    const storageBag = await storageSquidApi.query.StorageBag.byId(
-      'dynamic:channel:1',
-      {
-        __scalar: true,
-        objects: {
-          id: true,
-          ipfsHash: true,
-          size: true,
-        },
-      }
-    )
-    ```
+Retrieves first entity matching provided conditions.
 
+#### Syntax
+
+<pre>
+qApi.query.**_ENTITY_NAME_**.first(\{
+  where: **_WHERE_ARGS_**,
+  select: **_SELECTION_**, // Optional, by default all scalar fields are selected
+  orderBy: **_ORDER_BY_LIST_** // Optional
+\})
+</pre>
+
+#### Examples
+
+<Tabs>
+  <TabItem value="query-node" label="Query node" default>
+    <CodeBlock languague="typescript" live>
+      {qn_first1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {qn_first2}
+    </CodeBlock>
+  </TabItem>
+  <TabItem value="orion" label="Orion" default>
+    <CodeBlock languague="typescript" live>
+      {orion_first1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {orion_first2}
+    </CodeBlock>
+  </TabItem>
+  <TabItem value="storage-squid" label="Storage squid" default>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_first1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_first2}
+    </CodeBlock>
   </TabItem>
 </Tabs>
 
@@ -187,31 +230,12 @@ qApi.query.**_ENTITY_NAME_**.byIds(**_IDS_**, **_SELECTION_**) // Selects specif
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
-    
-    ```typescript
-    // Get all scalar fields of a few storage buckets
-    const storageBucket = await storageSquidApi.query.StorageBucket.byIds(['0', '1', '2'])
-    ```
-
-    ```typescript
-    // Get storage bags of a few channels, along with some information about their data objects
-    const storageBag = await storageSquidApi.query.StorageBag.byIds(
-      [
-        'dynamic:channel:1',
-        'dynamic:channel:7692',
-        'dynamic:channel:7698'
-      ],
-      {
-        __scalar: true,
-        objects: {
-          id: true,
-          ipfsHash: true,
-          size: true,
-        },
-      }
-    )
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byIds1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byIds2}
+    </CodeBlock>
   </TabItem>
 </Tabs>
 
@@ -263,28 +287,12 @@ qApi.query.**_ENTITY_NAME_**.byMany(\{
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
-    ```typescript
-    // Query scalar fields of storage buckets by their node endpoints
-    const endpoints = [
-      "https://storage.js.8k.pm/storage/",
-      "https://storage.freakstatic.com/storage/",
-      "https://storage.0x2bc.com/storage/",
-    ];
-    const buckets = await storageSquidApi.query.StorageBucket.byMany({
-      input: endpoints,
-      where: (endpoints) => ({ operatorMetadata: { nodeEndpoint_in: endpoints } }),
-    });
-    ```
-
-    ```typescript
-    // Query ids and sizes of data objects by a list of bagIds
-    const objects = await storageSquidApi.query.StorageDataObject.byMany({
-      input: ["dynamic:channel:1", "dynamic:channel:7692", "dynamic:channel:7698"],
-      where: (bagIds) => ({ storageBag: { id_in: bagIds } }),
-      select: { id: true, size: true },
-    });
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byMany1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_byMany2}
+    </CodeBlock>
   </TabItem>
 </Tabs>
 
@@ -354,40 +362,12 @@ interface Pagination<Entity> {
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
-  
-    ```typescript
-    // Get ids ALL storage bags,
-    // fetching no more than 1000 bags in a single query
-    const bags = await storageSquidApi.query.StorageBag.paginate({
-      orderBy: ["createdAt_ASC"],
-      select: { id: true },
-      pageSize: 1000,
-    }).fetchAll();
-    ```
-
-    ```typescript
-    // Fetch information about the largest data objects
-    // and save each page of 1000 entries to a separate file
-    // (limit the number of files to 10)
-    const objectsPagination = storageSquidApi.query.StorageDataObject.paginate({
-      orderBy: ["size_DESC"],
-      select: {
-        id: true,
-        size: true,
-        type: {
-          __typename: true,
-        },
-      },
-      pageSize: 1000,
-    });
-    let i = 1;
-    while (i <= 10 && objectsPagination.hasNextPage) {
-      const page = await objectsPagination.nextPage();
-      fs.writeFileSync(`${i}.json`, JSON.stringify(page));
-      ++i;
-    }
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {storageSquid_paginate1}
+    </CodeBlock>
+    <CodeBlock languague="typescript" live>
+      {storageSquid_paginate2}
+    </CodeBlock>
   </TabItem>
 </Tabs>
 
@@ -411,14 +391,9 @@ If you have more specific needs, you can access the underlying [GenQL](https://g
   </TabItem>
 
   <TabItem value="storage-squid" label="Storage squid" default>
-    ```typescript
-    const result = await storageSquidApi..client.query({
-      squidStatus: {
-        height: true,
-      },
-    });
-    ```
-
+    <CodeBlock languague="typescript" live>
+      {storageSquid_custom1}
+    </CodeBlock>
   </TabItem>
 </Tabs>
 

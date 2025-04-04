@@ -21,7 +21,7 @@ jobs:
       - name: Run build
         run: yarn build
       - name: Setup testing environment
-        run: yarn test:setup
+        run: yarn test:setup:up
       - name: Run tests
         run: yarn test:sdk
   test-snippets:
@@ -36,8 +36,9 @@ jobs:
           node-version-file: 'package.json'
       - name: Install dependencies
         run: yarn install --immutable
-      - name: Install /docs dependencies
-        working-directory: ./docs
-        run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
+      - name: Build code
+        run: yarn build
       - name: Test snippets
         run: yarn test:snippets

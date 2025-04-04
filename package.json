@@ -8,13 +8,17 @@
   "main": "index.js",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "docs"
   ],
   "scripts": {
-    "test:setup": "./test-setup/run-test-setup.sh",
-    "test": "jest",
-    "test:sdk": "jest ./packages",
-    "test:snippets": "jest ./docs",
+    "test:setup:down": "./test-setup/down.sh",
+    "test:setup:up": "./test-setup/up.sh",
+    "test:node": "TEST_ENV=node jest",
+    "test:js-dom": "TEST_ENV=js-dom jest",
+    "test": "TEST_ENV=node,js-dom jest",
+    "test:sdk": "yarn test ./packages",
+    "test:snippets": "yarn test ./docs",
     "run-example": "./scripts/run-example.sh",
     "codegen:query-apis": "./scripts/ts-run.sh core ./src/query/codegen/generateApis.ts",
     "lint": "eslint .",
@@ -34,6 +38,7 @@
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
     "jest": "^29.7.0",
+    "madge": "^8.0.0",
     "prettier": "3.4.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",

@@ -1,13 +1,16 @@
 import { createJsWithTsPreset, JestConfigWithTsJest } from 'ts-jest'
 
 const packages = ['core']
-const environments = ['node', 'jsdom']
+const envs = (process.env.TEST_ENV || 'node').split(',')
 
 const jestConfig: JestConfigWithTsJest = {
+  maxWorkers: 1,
+  maxConcurrency: 8,
+  detectOpenHandles: true,
   projects: [
     ...packages
       .map((pkg) =>
-        environments.map((env) => ({
+        envs.map((env) => ({
           displayName: `@joystream/sdk-${pkg} (${env})`,
           testMatch: [`<rootDir>/packages/${pkg}/**/*.test.ts`],
           ...createJsWithTsPreset({
