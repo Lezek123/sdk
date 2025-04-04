@@ -1,5 +1,5 @@
 import { describe } from '@jest/globals'
-import { SnippetFunc, snippetScope } from './snippet'
+import { SnippetFunc, createSnippetContext } from './snippet'
 import qnSnippets from './query/queryNode'
 import orionSnippets from './query/orion'
 import storageSquidSnippets from './query/storageSquid'
@@ -12,6 +12,8 @@ const snippets = {
   },
 }
 
+const snippetContext = createSnippetContext()
+
 type Snippets = Record<string, SnippetFunc | Record<string, unknown>>
 
 function testSnippets(source: Snippets) {
@@ -21,7 +23,7 @@ function testSnippets(source: Snippets) {
         name,
         async () => {
           await value({
-            ...snippetScope,
+            ...(await snippetContext),
             log: () => null, // Don't log anything to keep the output clean
           })
         },
@@ -36,8 +38,8 @@ function testSnippets(source: Snippets) {
 }
 
 afterAll(async () => {
-  await snippetScope.qnApi.disconnect()
-  await snippetScope.orionApi.disconnect()
+  await (await snippetContext).qnApi.disconnect()
+  await (await snippetContext).orionApi.disconnect()
 })
 
 describe('Snippets', () => {
