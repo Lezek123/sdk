@@ -4896,6 +4896,7 @@ __metadata:
     "@types/async-lock": "npm:^1.4.2"
     "@types/debug": "npm:^4.1.12"
     "@types/lodash": "npm:^4"
+    "@types/retry": "npm:^0"
     "@types/ws": "npm:^8.5.14"
     "@walletconnect/modal": "npm:^2.7"
     "@walletconnect/universal-provider": "npm:^2.18"
@@ -4905,6 +4906,7 @@ __metadata:
     graphql-ws: "npm:^6.0.4"
     lodash: "npm:^4.17.21"
     queue: "npm:^6.0.0"
+    retry: "npm:^0.13.1"
     subscriptions-transport-ws: "npm:^0.11.0"
     uuid: "npm:^11.1.0"
   languageName: unknown
@@ -8032,6 +8034,13 @@ __metadata:
   version: 0.12.0
   resolution: "@types/retry@npm:0.12.0"
   checksum: 10c0/7c5c9086369826f569b83a4683661557cab1361bac0897a1cefa1a915ff739acd10ca0d62b01071046fe3f5a3f7f2aec80785fe283b75602dc6726781ea3e328
+  languageName: node
+  linkType: hard
+
+"@types/retry@npm:^0":
+  version: 0.12.5
+  resolution: "@types/retry@npm:0.12.5"
+  checksum: 10c0/eaaca483cc62f2f02c0b8486847ee70986ca7f97afd7363037247dbe3e98df8bd56a5b50d58b1e96768a5a1be0307010d86e9991bd458d72e8df88be471bd720
   languageName: node
   linkType: hard
 

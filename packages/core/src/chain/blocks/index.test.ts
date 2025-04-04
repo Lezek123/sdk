@@ -7,7 +7,7 @@ jest.setTimeout(120_000)
 
 const TEST_WS_ENDPOINT = endpoints.joystreamDev.wsRpc
 
-const apiPromise = createApi(TEST_WS_ENDPOINT)
+const apiPromise = createApi(TEST_WS_ENDPOINT, { wsTimeout: 120_000 })
 
 describe('BlockUtils', () => {
   beforeAll(async () => {
