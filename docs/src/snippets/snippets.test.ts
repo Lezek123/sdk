@@ -3,6 +3,7 @@ import { SnippetFunc, createSnippetContext } from './snippet'
 import qnSnippets from './query/queryNode'
 import orionSnippets from './query/orion'
 import storageSquidSnippets from './query/storageSquid'
+import { disconnect } from '@joystream/sdk-core/chain'
 
 const snippets = {
   query: {
@@ -38,8 +39,10 @@ function testSnippets(source: Snippets) {
 }
 
 afterAll(async () => {
-  await (await snippetContext).qnApi.disconnect()
-  await (await snippetContext).orionApi.disconnect()
+  const { qnApi, api, orionApi } = await snippetContext
+  await disconnect(api)
+  await qnApi.disconnect()
+  await orionApi.disconnect()
 })
 
 describe('Snippets', () => {
