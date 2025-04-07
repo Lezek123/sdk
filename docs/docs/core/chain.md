@@ -77,7 +77,7 @@ const blocks = new BlockUtils(api, statescanClient)
 ### Estimate block number from date
 
 :::warning
-Note that this function only **estimates** the block number based on a provided staring point (last finalized block by default) and an assumed blockrate of 1&nbsp;block&nbsp;/&nbsp;6&nbsp;sec. If that is not accurate enough for you, consider using [`.exactBlockAt`](#find-exact-block-from-date)
+Note that this function only **estimates** the block number based on a provided staring point (last finalized block by default) and an assumed blockrate of 1&nbsp;block&nbsp;/&nbsp;6&nbsp;sec. If that is not accurate enough for you, consider using [`.exactBlockAt`](#find-exact-block-by-date)
 :::
 
 <CodeBlock language="typescript" live>{estimateBlock}</CodeBlock>
