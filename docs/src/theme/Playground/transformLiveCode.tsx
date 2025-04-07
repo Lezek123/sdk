@@ -1,13 +1,3 @@
-import _ from 'lodash'
-import { contextVars } from '../../snippets/snippet'
-
-const extractLocalVariables = (code: string) => {
-  const varaibleNames = [
-    ...code.matchAll(/(^|\s)(let|const) (?<var>[A-Za-z0-9]+)/g),
-  ].map((m) => m.groups['var'])
-  return varaibleNames
-}
-
 const replaceImports = (code: string) => {
   return code.replace(
     /import \{(?<importedElements>[\s\S]+)\} from '@joystream\/sdk-core\/(?<importPath>.+)'/,
@@ -28,7 +18,6 @@ export const transformLiveCode = (code: string) => `
   const runCode = async () => {
     setLogs([])
     setRunning(true)
-    const { ${_.difference(contextVars, extractLocalVariables(code)).join(', ')} } = await context
     ${replaceImports(code)}
     setRunning(false)
   }
