@@ -24,6 +24,7 @@
     "lint": "eslint .",
     "codegen": "yarn codegen:query-apis",
     "build": "yarn tsc -b",
+    "build:docs": "yarn workspace @joystream/sdk-docs build",
     "build:examples": "./scripts/build-examples.sh",
     "pack": "yarn build && yarn workspaces foreach -Ap --include \"./packages/*\" pack",
     "pre-push": "./scripts/pre-push.sh"
