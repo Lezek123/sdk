@@ -135,9 +135,8 @@ export class TraceableTx<
             `Insufficient balance to cover tx fees`
           )
         }
-      } else {
-        throw new TxRejectedError(this.tx, errorMsg(e))
       }
+      throw new TxRejectedError(this.tx, errorMsg(e))
     }
   }
 

@@ -93,9 +93,13 @@ export class TxManager {
   readonly meta: MetaTransactions
   private nonceByAccount = new Map<string, number>()
 
-  constructor(api: ApiPromise, keyManager: KeyManager) {
+  constructor(
+    api: ApiPromise,
+    keyManager: KeyManager,
+    blockUtils?: BlockUtils
+  ) {
     this.api = api
-    this.blockUtils = new BlockUtils(this.api)
+    this.blockUtils = blockUtils || new BlockUtils(this.api)
     this.keyManager = keyManager
     this.meta = metaTransactions(api)
   }
