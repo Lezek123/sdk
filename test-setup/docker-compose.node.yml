@@ -5,8 +5,9 @@ services:
     container_name: joystream-node
     volumes:
       - chain-data:/data
+      - ./test-chain-spec.json:/test-chain-spec.json
     command:
-      '--chain dev --alice --validator --pruning=archive --unsafe-ws-external --unsafe-rpc-external
+      '--chain /test-chain-spec.json --alice --validator --pruning=archive --unsafe-ws-external --unsafe-rpc-external
       --rpc-methods Safe --rpc-cors=all --log runtime --base-path /data --no-hardware-benchmarks'
     ports:
       - 127.0.0.1:9944:9944

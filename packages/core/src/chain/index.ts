@@ -1,10 +1,15 @@
+export { createApi, disconnect, isMainnet, isSyncing, untilSynced } from './api'
+
 export {
-  createApi,
-  disconnect,
-  isMainnet,
-  isSyncing,
+  MultiQuerySubscriber,
+  ContentFees,
+  NftConfig,
+  Query,
+  QueryWithOptArgs,
+  QueriesRecord,
+  QueryResults,
   sortedEntries,
-  untilSynced,
-} from './api'
+  subscribeMulti,
+} from './queries'
 
 export { AsSimple, metaToBytes, metaToHex, MetaInput } from './types'
