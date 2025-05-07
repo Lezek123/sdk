@@ -23,7 +23,7 @@ import {
   MetadataProcessorApi,
   MetaTxStatus,
 } from '../query/interfaces'
-import EventEmitter from 'node:events'
+import EventEmitter from 'eventemitter3'
 import { KeyManager } from '../keys'
 import { errorMsg, toError } from '../utils'
 import { v7 as uuid } from 'uuid'

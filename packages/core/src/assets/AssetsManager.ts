@@ -1,7 +1,10 @@
+import _ from 'lodash'
+import { randomBytes } from 'crypto'
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/types'
 import { Call } from '@polkadot/types/interfaces'
 import { PalletContentStorageAssetsRecord } from '@polkadot/types/lookup'
+import { encodeAddress, sr25519PairFromSeed } from '@polkadot/util-crypto'
 import {
   AnyNumber,
   channelRewardAccount,
@@ -165,12 +168,15 @@ export class AssetsManager {
 
   async estimateFee(
     tx: SubmittableExtrinsic<'promise'>,
-    sender: string
+    sender?: string
   ): Promise<bigint> {
-    // Prevents tx from being signed
+    // Prevents tx from being modified
     const clonedTx = this.api.tx[tx.method.section][tx.method.method](
       ...tx.args
     )
+    // Use mock sender if not provided
+    sender =
+      sender || encodeAddress(sr25519PairFromSeed(randomBytes(32)).publicKey)
     const { partialFee } = await clonedTx.paymentInfo(sender)
     return partialFee.toBigInt()
   }
@@ -582,6 +588,9 @@ export class AssetsManager {
         : balances.total -
           requiredBalances.total +
           (requiresKeepAlive ? EXISTENTIAL_DEPOSIT : 0n)
+    if (total < EXISTENTIAL_DEPOSIT) {
+      return _.mapValues(balances, () => 0n)
+    }
     const free = max(0n, min(total, balances.free - requiredBalances.free))
     const feeUsable = max(
       0n,
@@ -603,9 +612,10 @@ export class AssetsManager {
     const balances = await this.getBalances(account)
     const requiredBalances = this.requiredBalances(costs)
     return (
-      balances.feeUsable >= requiredBalances.feeUsable ||
-      balances.transferrable >= requiredBalances.transferrable ||
-      balances.total >= requiredBalances.total
+      balances.total >= requiredBalances.total &&
+      balances.free >= requiredBalances.free &&
+      balances.feeUsable >= requiredBalances.feeUsable &&
+      balances.transferrable >= requiredBalances.transferrable
     )
   }
 }

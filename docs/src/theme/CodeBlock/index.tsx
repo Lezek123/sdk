@@ -19,7 +19,7 @@ const withLiveEditor = (Component: typeof CodeBlock) => {
         })
       }
     }, [])
-    if (props.live && context) {
+    if (props.live) {
       return <Playground scope={{ ...ReactLiveScope, ...context }} {...props} />
     }
 

@@ -15,7 +15,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types'
 import { createJoystreamToolbox } from '@joystream/sdk-core/toolbox'
 import { buildMocks } from './mocks'
 
-const TEST_NODE_ENDPOINT = endpoints.sdkTesting.wsRpc
+const TEST_NODE_ENDPOINT = endpoints.sdkTesting.wsRpcMock
 
 jest.setTimeout(30_000)
 
@@ -115,19 +115,24 @@ describe('Assets', () => {
       const {
         api,
         mocks: { mockAccount },
+        assets,
       } = await tools
-      const sender = await mockAccount(1)
-      await ensureExtrinsicCostsCorrectlyEstimated(
-        api.tx.balances.transfer(alice, joyToHapi(1)),
-        sender
-      )
+      const tx = api.tx.balances.transfer(alice, joyToHapi(1))
+      const estTransferFee = await assets.estimateFee(tx)
+      const sender = await mockAccount(1 + hapiToJoy(estTransferFee))
+      await ensureExtrinsicCostsCorrectlyEstimated(tx, sender)
     })
     test.concurrent('balances.transferKeepAlive', async () => {
       const {
         api,
         mocks: { mockAccount },
+        assets,
       } = await tools
-      const sender = await mockAccount(1 + hapiToJoy(EXISTENTIAL_DEPOSIT))
+      const tx = api.tx.balances.transferKeepAlive(alice, joyToHapi(1))
+      const estTransferFee = await assets.estimateFee(tx)
+      const sender = await mockAccount(
+        1 + hapiToJoy(EXISTENTIAL_DEPOSIT) + hapiToJoy(estTransferFee)
+      )
       await ensureExtrinsicCostsCorrectlyEstimated(
         api.tx.balances.transferKeepAlive(alice, joyToHapi(1)),
         sender

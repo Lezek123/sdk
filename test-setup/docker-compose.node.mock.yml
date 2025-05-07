@@ -1,0 +1,19 @@
+services:
+  mock-joystream-node:
+    image: joystream/node:latest
+    restart: unless-stopped
+    container_name: mock-joystream-node
+    volumes:
+      - mock-chain-data:/data
+      - ./mock-chain-spec.json:/mock-chain-spec.json
+    command:
+      '--chain /mock-chain-spec.json --alice --validator --pruning=archive --unsafe-ws-external --unsafe-rpc-external
+      --rpc-methods Safe --rpc-cors=all --log runtime --base-path /data --no-hardware-benchmarks
+      --rpc-port ${MOCK_JOYSTREAM_NODE_HTTP_PORT} --ws-port ${MOCK_JOYSTREAM_NODE_WS_PORT}'
+    ports:
+      - 127.0.0.1:${MOCK_JOYSTREAM_NODE_HTTP_PORT}:${MOCK_JOYSTREAM_NODE_HTTP_PORT}
+      - 127.0.0.1:${MOCK_JOYSTREAM_NODE_WS_PORT}:${MOCK_JOYSTREAM_NODE_WS_PORT}
+
+volumes:
+  mock-chain-data:
+    driver: local
