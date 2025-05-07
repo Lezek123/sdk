@@ -1,6 +1,7 @@
 export const endpoints = {
   sdkTesting: {
     wsRpc: 'ws://localhost:9944',
+    wsRpcMock: 'ws://localhost:9966',
     orionMock: 'http://localhost:50002/graphql',
     queryNode: 'http://localhost:50004/graphql',
   },

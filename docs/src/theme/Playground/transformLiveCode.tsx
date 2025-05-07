@@ -1,8 +1,22 @@
+import { imports } from '../../snippets/snippet'
+import _ from 'lodash'
+
 const replaceImports = (code: string) => {
-  return code.replace(
-    /import \{(?<importedElements>[\s\S]+)\} from '@joystream\/sdk-core\/(?<importPath>.+)'/,
-    "const {$<importedElements>} = imports['$<importPath>']"
-  )
+  for (const importPath of Object.keys(imports)) {
+    code = code.replace(
+      new RegExp(
+        `import \\{(?<importedElements>[^\\}]+?)\\} from '${_.escapeRegExp(importPath)}'`
+      ),
+      `const {$<importedElements>} = imports['${importPath}']`
+    )
+    code = code.replace(
+      new RegExp(
+        `import (?<importName>.+) from '${_.escapeRegExp(importPath)}'`
+      ),
+      `const $<importName> = imports['${importPath}']`
+    )
+  }
+  return code
 }
 
 // // this should rather be a stable function
@@ -11,9 +25,13 @@ export const transformLiveCode = (code: string) => `
 () => {
   const [logs, setLogs] = useState([])
   const [running, setRunning] = useState(false)
-  const log = (value) => setLogs((l) => [
+  const log = (...values) => setLogs((l) => [
     ...l,
-    typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+    ...values.map((value) => (
+      typeof value === 'string'
+        ? value
+        : JSON.stringify(value, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2)
+    ))
   ])
   const runCode = async () => {
     setLogs([])
@@ -25,7 +43,7 @@ export const transformLiveCode = (code: string) => `
     <>
       <div>
         <button
-          disabled={running}
+          disabled={(typeof imports === 'undefined') || running}
           className="button button--primary margin-right--xs"
           onClick={runCode}
         >

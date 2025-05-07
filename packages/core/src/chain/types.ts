@@ -18,6 +18,7 @@ import {
 import { AnyMetadataClass } from '@joystream/metadata-protobuf/types'
 import { createType } from '@joystream/types'
 import { Long } from 'long'
+import { Buffer } from 'buffer'
 
 export type EnumVariant<T> = keyof T extends infer K
   ? K extends keyof T

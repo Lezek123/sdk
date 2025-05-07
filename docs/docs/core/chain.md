@@ -98,19 +98,11 @@ This method could be slow, especially when using BlockUtils without Statescan AP
 
 ### Time interval as number of blocks
 
-```typescript
-import { asBlocks } from '@joystream/sdk-core/chain/blocks'
-```
-
 <CodeBlock language="typescript" live>
   {timeToBlocks}
 </CodeBlock>
 
 ### Number of blocks as time interval
-
-```typescript
-import { asTime } from '@joystream/sdk-core/chain/blocks'
-```
 
 <CodeBlock language="typescript" live>
   {blocksToTime}

@@ -1,8 +1,13 @@
 export type Balances = {
+  // All funds, including locked and reserved
   total: bigint
+  // All funds EXCEPT reserved
   free: bigint
+  // All funds that can be used to pay transaction fees and other fee-like costs
   feeUsable: bigint
+  // All funds that are free to be transferred to another account
   transferrable: bigint
+  // TODO: Will be expanded with vesting status, locks etc. in the future
 }
 
 export enum FundsDestinyType {
@@ -83,9 +88,15 @@ export enum CostKind {
 }
 
 export interface Cost {
+  // What kind of cost is this (for example: MembershipFee)
   kind: CostKind
+  // Whether paying this cost requires the account to stay alive
+  // and therefore its totalBalance to stay above EXISTENTIAL_DEPOSIT
   requiresKeepAlive: boolean
+  // Describes what happens with the funds (are they burned? deposisted? transferred?)
   destiny: FundsDestiny
+  // Which balance type is used to pay the the cost (eg. free, feeUsable, transferrable)
   paidFrom: BalanceType
+  // Value in HAPI
   value: bigint
 }
