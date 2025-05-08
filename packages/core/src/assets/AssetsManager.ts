@@ -1,10 +1,13 @@
 import _ from 'lodash'
-import { randomBytes } from 'crypto'
 import { ApiPromise } from '@polkadot/api'
 import { SubmittableExtrinsic } from '@polkadot/api/types'
 import { Call } from '@polkadot/types/interfaces'
 import { PalletContentStorageAssetsRecord } from '@polkadot/types/lookup'
-import { encodeAddress, sr25519PairFromSeed } from '@polkadot/util-crypto'
+import {
+  encodeAddress,
+  sr25519PairFromSeed,
+  randomAsU8a,
+} from '@polkadot/util-crypto'
 import {
   AnyNumber,
   channelRewardAccount,
@@ -176,7 +179,7 @@ export class AssetsManager {
     )
     // Use mock sender if not provided
     sender =
-      sender || encodeAddress(sr25519PairFromSeed(randomBytes(32)).publicKey)
+      sender || encodeAddress(sr25519PairFromSeed(randomAsU8a(32)).publicKey)
     const { partialFee } = await clonedTx.paymentInfo(sender)
     return partialFee.toBigInt()
   }
