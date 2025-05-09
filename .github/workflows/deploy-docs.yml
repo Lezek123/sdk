@@ -18,11 +18,13 @@ jobs:
         with:
           node-version-file: 'package.json'
       - name: Install dependencies
-        working-directory: ./docs
         run: yarn install --immutable
+      - name: Run codegen
+        run: yarn codegen
       - name: Run build
-        working-directory: ./docs
         run: yarn build
+      - name: Run docs build
+        run: yarn build:docs
       - name: Upload build artifacts
         uses: actions/upload-pages-artifact@v3
         with:

@@ -7,5 +7,6 @@ yarn
 yarn codegen
 yarn build
 yarn build:examples
+yarn build:docs
 yarn lint
 yarn run pack

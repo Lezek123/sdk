@@ -23,7 +23,7 @@ import {
   MetadataProcessorApi,
   MetaTxStatus,
 } from '../query/interfaces'
-import EventEmitter from 'node:events'
+import EventEmitter from 'eventemitter3'
 import { KeyManager } from '../keys'
 import { errorMsg, toError } from '../utils'
 import { v7 as uuid } from 'uuid'
@@ -135,9 +135,8 @@ export class TraceableTx<
             `Insufficient balance to cover tx fees`
           )
         }
-      } else {
-        throw new TxRejectedError(this.tx, errorMsg(e))
       }
+      throw new TxRejectedError(this.tx, errorMsg(e))
     }
   }
 

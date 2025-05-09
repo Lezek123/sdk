@@ -1,18 +1,22 @@
+import { imports } from '../../snippets/snippet'
 import _ from 'lodash'
-import { contextVars } from '../../snippets/snippet'
-
-const extractLocalVariables = (code: string) => {
-  const varaibleNames = [
-    ...code.matchAll(/(^|\s)(let|const) (?<var>[A-Za-z0-9]+)/g),
-  ].map((m) => m.groups['var'])
-  return varaibleNames
-}
 
 const replaceImports = (code: string) => {
-  return code.replace(
-    /import \{(?<importedElements>[\s\S]+)\} from '@joystream\/sdk-core\/(?<importPath>.+)'/,
-    "const {$<importedElements>} = imports['$<importPath>']"
-  )
+  for (const importPath of Object.keys(imports)) {
+    code = code.replace(
+      new RegExp(
+        `import \\{(?<importedElements>[^\\}]+?)\\} from '${_.escapeRegExp(importPath)}'`
+      ),
+      `const {$<importedElements>} = imports['${importPath}']`
+    )
+    code = code.replace(
+      new RegExp(
+        `import (?<importName>.+) from '${_.escapeRegExp(importPath)}'`
+      ),
+      `const $<importName> = imports['${importPath}']`
+    )
+  }
+  return code
 }
 
 // // this should rather be a stable function
@@ -21,14 +25,17 @@ export const transformLiveCode = (code: string) => `
 () => {
   const [logs, setLogs] = useState([])
   const [running, setRunning] = useState(false)
-  const log = (value) => setLogs((l) => [
+  const log = (...values) => setLogs((l) => [
     ...l,
-    typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+    ...values.map((value) => (
+      typeof value === 'string'
+        ? value
+        : JSON.stringify(value, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2)
+    ))
   ])
   const runCode = async () => {
     setLogs([])
     setRunning(true)
-    const { ${_.difference(contextVars, extractLocalVariables(code)).join(', ')} } = await context
     ${replaceImports(code)}
     setRunning(false)
   }
@@ -36,7 +43,7 @@ export const transformLiveCode = (code: string) => `
     <>
       <div>
         <button
-          disabled={running}
+          disabled={(typeof imports === 'undefined') || running}
           className="button button--primary margin-right--xs"
           onClick={runCode}
         >

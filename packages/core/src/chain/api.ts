@@ -1,15 +1,14 @@
-import { AsCodec } from '@joystream/types'
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { Codec, Observable } from '@polkadot/types/types'
-import { ApiOptions, AugmentedQuery } from '@polkadot/api/types'
-import { u8aToBigInt } from '@polkadot/util'
+import { ApiOptions } from '@polkadot/api/types'
 import { Health } from '@polkadot/types/interfaces'
 import { promisifySubscription } from '../utils'
 import { MAINNET_GENESIS_HASH } from './consts'
 
+export type ApiConfig = ApiOptions & { wsTimeout?: number }
+
 export async function createApi(
   wsUri: string,
-  { wsTimeout, ...apiOptions }: ApiOptions & { wsTimeout?: number } = {}
+  { wsTimeout, ...apiOptions }: ApiConfig = {}
 ) {
   // TODO: Or fail?
   const wsProvider = new WsProvider(wsUri, undefined, undefined, wsTimeout)
@@ -44,25 +43,3 @@ export async function disconnect(api: ApiPromise): Promise<void> {
     api.disconnect().catch(reject)
   })
 }
-
-export async function sortedEntries<
-  IDType extends Codec,
-  ValueType extends Codec,
->(
-  apiMethod: AugmentedQuery<
-    'promise',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (key: any) => Observable<ValueType>,
-    [IDType]
-  >
-): Promise<[IDType, AsCodec<ValueType>][]> {
-  const entries: [IDType, AsCodec<ValueType>][] = (
-    await apiMethod.entries()
-  ).map(([storageKey, value]) => [storageKey.args[0] as IDType, value])
-
-  return entries.sort((a, b) =>
-    u8aToBigInt(a[0].toU8a()) < u8aToBigInt(b[0].toU8a()) ? -1 : 1
-  )
-}
-
-// TODO: Batching of RPC queries?

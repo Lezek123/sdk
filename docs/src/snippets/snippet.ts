@@ -1,11 +1,13 @@
 import * as importsChain from '@joystream/sdk-core/chain'
 import * as importsChainBlocks from '@joystream/sdk-core/chain/blocks'
-import { createApi } from '@joystream/sdk-core/chain'
-import { BlockUtils } from '@joystream/sdk-core/chain/blocks'
-import { OrionApi } from '@joystream/sdk-core/query/orion'
-import { QueryNodeApi } from '@joystream/sdk-core/query/queryNode'
-import { StorageSquidApi } from '@joystream/sdk-core/query/storageSquid'
+import * as importsAssets from '@joystream/sdk-core/assets'
+import * as importKeys from '@joystream/sdk-core/keys'
+import * as importTx from '@joystream/sdk-core/tx'
+import * as importToolbox from '@joystream/sdk-core/toolbox'
+import * as importUtils from '@joystream/sdk-core/utils'
+import * as importBN from 'bn.js'
 import { endpoints } from '@joystream/sdk-core/utils/endpoints'
+import { createJoystreamToolbox } from '@joystream/sdk-core/toolbox'
 
 export const contextVars = [
   'api',
@@ -13,22 +15,40 @@ export const contextVars = [
   'orionApi',
   'storageSquidApi',
   'blocks',
+  'assets',
+  'keys',
   'imports',
+  'joystreamToolbox',
 ] as const
 
-const imports = {
-  'chain': importsChain,
-  'chain/blocks': importsChainBlocks,
+export const imports = {
+  '@joystream/sdk-core/utils': importUtils,
+  '@joystream/sdk-core/keys': importKeys,
+  '@joystream/sdk-core/tx': importTx,
+  '@joystream/sdk-core/chain': importsChain,
+  '@joystream/sdk-core/chain/blocks': importsChainBlocks,
+  '@joystream/sdk-core/assets': importsAssets,
+  '@joystream/sdk-core/toolbox': importToolbox,
+  'bn.js': importBN,
 }
 
 export const createSnippetContext = async () => {
-  const api = await createApi(endpoints.joystreamDev.wsRpc)
+  const joystreamToolbox = await createJoystreamToolbox({
+    nodeWsEndpoint: endpoints.joystreamDev.wsRpc,
+    orionUrl: endpoints.joystreamDev.orion,
+    storageSquidUrl: endpoints.joystreamDev.storageSquid,
+    queryNodeUrl: endpoints.joystreamDev.queryNode,
+    keyManagerConfig: { keyringOptions: { isDev: true } },
+  })
   return {
-    api,
-    qnApi: new QueryNodeApi(endpoints.joystreamDev.queryNode),
-    orionApi: new OrionApi(endpoints.joystreamDev.orion),
-    storageSquidApi: new StorageSquidApi(endpoints.joystreamDev.storageSquid),
-    blocks: new BlockUtils(api),
+    api: joystreamToolbox.api,
+    qnApi: joystreamToolbox.qnApi,
+    orionApi: joystreamToolbox.orionApi,
+    storageSquidApi: joystreamToolbox.storageSquidApi,
+    blocks: joystreamToolbox.blockUtils,
+    assets: joystreamToolbox.assets,
+    keys: joystreamToolbox.keys,
+    joystreamToolbox,
     imports,
   } satisfies { [K in (typeof contextVars)[number]]: unknown }
 }

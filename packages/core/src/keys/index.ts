@@ -28,3 +28,4 @@ export {
   createKeyring,
   knownAddresses,
 } from './keyring/Keyring'
+export { toAddress } from './utils'

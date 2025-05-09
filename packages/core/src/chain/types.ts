@@ -1,3 +1,4 @@
+import BN from 'bn.js'
 import { AnyU8a, Codec, ITuple } from '@polkadot/types/types'
 import {
   Text,
@@ -17,6 +18,7 @@ import {
 import { AnyMetadataClass } from '@joystream/metadata-protobuf/types'
 import { createType } from '@joystream/types'
 import { Long } from 'long'
+import { Buffer } from 'buffer'
 
 export type EnumVariant<T> = keyof T extends infer K
   ? K extends keyof T
@@ -49,15 +51,7 @@ type AsRecord<K, V> = K extends string
     : never
 
 type AsSimpleStruct<T extends Struct> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [K in keyof StructDefs<T> as StructDefs<T>[K] extends Option<any>
-    ? K
-    : never]?: AsSimple<StructDefs<T>[K]>
-} & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [K in keyof StructDefs<T> as StructDefs<T>[K] extends Option<any>
-    ? never
-    : K]: AsSimple<StructDefs<T>[K]>
+  [K in keyof StructDefs<T>]?: AsSimple<StructDefs<T>[K]>
 }
 
 export type AsSimple<T> =
@@ -74,7 +68,7 @@ export type AsSimple<T> =
           : T extends Bytes | Raw
             ? AnyU8a
             : T extends UInt
-              ? number | bigint
+              ? number | bigint | BN
               : T extends bool
                 ? boolean
                 : T extends Vec<infer S>
